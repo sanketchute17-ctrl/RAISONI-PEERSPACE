@@ -89,9 +89,11 @@ GEMINI_API_KEY=YOUR_GOOGLE_GEMINI_API_KEY
 `https://github.com/sanketchute17-ctrl/RAISONI-PEERSPACE.git`
 
 
-#RUN COMMANDS
+**##RUN COMMANDS**
 on first terminal :cd backend
 and then open new terminal : npm run dev
+
+
 ## Notes
 
 - `.gitignore` already configured to ignore `node_modules`, `dist`, `.vscode`, aur environment files
