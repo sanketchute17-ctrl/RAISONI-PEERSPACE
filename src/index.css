@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-float-3d: float 4s ease-in-out infinite;
+  
+  @keyframes float {
+    0% { transform: translateY(0px) rotateX(0deg); box-shadow: 0 10px 30px -10px rgba(30, 58, 138, 0.3); }
+    50% { transform: translateY(-15px) rotateX(2deg); box-shadow: 0 30px 40px -10px rgba(37, 99, 235, 0.6); }
+    100% { transform: translateY(0px) rotateX(0deg); box-shadow: 0 10px 30px -10px rgba(30, 58, 138, 0.3); }
+  }
+}
+
+:root {
+  --background: #f8fafc; /* off-white */
+  --foreground: #0f172a; /* dark navy */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
