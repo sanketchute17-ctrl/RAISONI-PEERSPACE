@@ -1,0 +1,601 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+
+dotenv.config();
+
+const app = express();
+
+// Dynamic GenAI client loader: attempt to load official package if available,
+// otherwise provide a lightweight fallback so the server runs without the package.
+let genAI;
+const initGenAI = async () => {
+  try {
+    const mod = await import('@google/genai');
+    const { GoogleGenAI } = mod;
+    genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    console.log('Google GenAI client loaded');
+  } catch (e) {
+    console.warn('Google GenAI package not installed or failed to load. Using fallback generator.');
+    genAI = {
+      models: {
+        generateContent: async (opts) => {
+          const userMessage = (opts.contents && opts.contents[0] && opts.contents[0].parts && opts.contents[0].parts[0].text) || 'Hello';
+          return {
+            content: {
+              parts: [{ text: `Fallback AI: I received your message: ${userMessage}` }]
+            }
+          };
+        }
+      }
+    };
+  }
+};
+
+initGenAI();
+
+// Middleware
+// Configure CORS to allow origins from env (comma-separated) or default localhost Vite dev URL
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',');
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow non-browser tools or same-origin
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS policy: Origin not allowed'));
+  }
+}));
+
+app.use(express.json());
+
+// ==========================================
+// 🧠 SIMPLE IN-MEMORY DATABASE (Hackathon Speed)
+// ==========================================
+let questions = [
+  {
+    id: 1,
+    title: "How does Garbage Collection work in Java?",
+    description: "Our professor mentioned this but I didn't get it fully.",
+    tags: ["Java Programming", "General"],
+    author: "Anonymous Student",
+    isAnonymous: true,
+    upvotes: 12,
+    answers: [
+      {
+        id: 101,
+        text: "Java uses a Mark-and-Sweep algorithm to automatically free memory. Unreachable objects get deleted.",
+        author: "Rahul Sharma",
+        isVerified: true
+      }
+    ],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    title: "When is the next T&P Drive?",
+    description: "Are there any companies coming next week?",
+    tags: ["T&P Updates"],
+    author: "Priya Singh",
+    isAnonymous: false,
+    upvotes: 5,
+    answers: [],
+    createdAt: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
+  }
+];
+
+// Simple Leaderboard Dummy Data
+let users = [
+  { name: "Rahul Sharma", points: 1420, rank: 1 },
+  { name: "Priya Singh", points: 980, rank: 2 },
+  { name: "Aman D.", points: 650, rank: 3 }
+];
+
+// ==========================================
+// 🚀 BACKEND APIs
+// ==========================================
+
+// 1. GET /questions -> Fetch all questions
+app.get('/api/questions', (req, res) => {
+  // Sort questions by newest first
+  const sortedQuestions = [...questions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ success: true, data: sortedQuestions });
+});
+
+// 2. POST /questions -> Ask a new question
+app.post('/api/questions', (req, res) => {
+  const { title, description, tags, author, isAnonymous } = req.body;
+  
+  if (!title) {
+    return res.status(400).json({ success: false, message: "Title is required!" });
+  }
+
+  const newQuestion = {
+    id: Date.now(), // simple unique ID
+    title,
+    description: description || "",
+    tags: tags || ["General"],
+    author: isAnonymous ? "Anonymous Student" : (author || "Student"),
+    isAnonymous: isAnonymous || false,
+    upvotes: 0,
+    answers: [],
+    createdAt: new Date().toISOString()
+  };
+
+  questions.push(newQuestion);
+  res.status(201).json({ success: true, data: newQuestion });
+});
+
+// 3. POST /answers -> Answer a specific question
+app.post('/api/answers', (req, res) => {
+  const { questionId, text, author } = req.body;
+
+  if (!questionId || !text) {
+    return res.status(400).json({ success: false, message: "Question ID and Answer Text are required!" });
+  }
+
+  const questionIndex = questions.findIndex(q => q.id === parseInt(questionId));
+  if (questionIndex === -1) {
+    return res.status(404).json({ success: false, message: "Question not found!" });
+  }
+
+  const newAnswer = {
+    id: Date.now(),
+    text,
+    author: author || "Student",
+    isVerified: false
+  };
+
+  questions[questionIndex].answers.push(newAnswer);
+  res.status(201).json({ success: true, data: newAnswer });
+});
+
+// 4. POST /upvote -> Upvote a question
+app.post('/api/upvote', (req, res) => {
+  const { questionId, decrement } = req.body; // decrement flag if removing upvote
+
+  const questionIndex = questions.findIndex(q => q.id === parseInt(questionId));
+  if (questionIndex === -1) {
+    return res.status(404).json({ success: false, message: "Question not found!" });
+  }
+
+  if (decrement) {
+    questions[questionIndex].upvotes -= 1;
+  } else {
+    questions[questionIndex].upvotes += 1;
+  }
+  
+  res.json({ success: true, points: questions[questionIndex].upvotes });
+});
+
+// 5. GET /leaderboard -> Fetch top users
+app.get('/api/leaderboard', (req, res) => {
+  res.json({ success: true, data: users });
+});
+
+// 5.b GET /subjects -> Fetch subjects based on branch
+const branchSubjects = {
+  CSE: ["Data Structures", "Operating Systems", "Java Programming", "Machine Learning", "Computer Networks"],
+  IT: ["Web Development", "Cloud Computing", "Database Management", "Software Engineering", "Cyber Security"],
+  MECH: ["Thermodynamics", "Fluid Mechanics", "Engineering Mechanics", "Machine Design", "AutoCAD"],
+  CIVIL: ["Structural Analysis", "Geotechnical Engineering", "Fluid Mechanics", "Surveying", "Concrete Technology"],
+  EXTC: ["Digital Electronics", "Signals & Systems", "Microprocessors", "Communication Systems"],
+  AI: ["Artificial Intelligence", "Neural Networks", "Python Programming", "Deep Learning"],
+  AIML: ["Machine Learning", "Deep Learning", "Data Mining", "Statistics", "Computer Vision"],
+  DS: ["Data Science", "Big Data Analytics", "Data Visualization", "R Programming", "Predictive Modeling"],
+  General: ["Aptitude", "Communication Skills", "T&P Updates", "General Campus"]
+};
+
+app.get('/api/subjects', (req, res) => {
+  const { branch } = req.query;
+  let subjects = branchSubjects.General;
+  if (branch && branchSubjects[branch]) {
+    subjects = [...new Set([...branchSubjects[branch], ...branchSubjects.General])];
+  } else if (!branch || branch === 'All') {
+    subjects = [...new Set(Object.values(branchSubjects).flat())];
+  }
+  res.json({ success: true, data: subjects });
+});
+
+// 6. POST /faculty-connect -> Advanced Mentorship Module
+let guidanceRequests = [];
+app.post('/api/faculty-connect', (req, res) => {
+  const { category, subCategory, subject, facultyName, title, description, isAnonymous } = req.body;
+  
+  if (!category || !title) {
+    return res.status(400).json({ success: false, message: "Category and Title are required!" });
+  }
+
+  const newRequest = {
+    id: Date.now(),
+    category,
+    subCategory: subCategory || null,
+    subject: subject || null,
+    facultyName: facultyName || null,
+    title,
+    description: description || "",
+    isAnonymous: isAnonymous || false,
+    status: "Pending Advice",
+    createdAt: new Date().toISOString()
+  };
+
+  guidanceRequests.push(newRequest);
+  res.status(201).json({ success: true, data: newRequest, message: "Your request has been submitted successfully" });
+});
+
+// 6.b GET /faculty-requests -> Fetch all mentorship requests for faculty dashboard
+app.get('/api/faculty-requests', (req, res) => {
+  // Sort newest first
+  const sortedRequests = [...guidanceRequests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ success: true, data: sortedRequests });
+});
+
+// 6.c PATCH /faculty-requests/:id -> Update request status (Accept/Decline/Advice)
+app.patch('/api/faculty-requests/:id', (req, res) => {
+  const { id } = req.params;
+  const { status, facultyReply } = req.body;
+
+  const requestIndex = guidanceRequests.findIndex(r => r.id === parseInt(id));
+  if (requestIndex === -1) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (status) guidanceRequests[requestIndex].status = status;
+  if (facultyReply) guidanceRequests[requestIndex].facultyReply = facultyReply;
+  
+  res.json({ success: true, data: guidanceRequests[requestIndex] });
+});
+
+// 7. POST /ai-chat -> AI Assistant functionality
+app.post('/api/ai-chat', async (req, res) => {
+  const { message, examMode } = req.body;
+  
+  if (!message) {
+    return res.status(400).json({ success: false, message: "Message is required" });
+  }
+
+  try {
+    const systemPrompt = examMode 
+      ? `You are an expert strict college professor AI for Raisoni College. Present your answer using bullet points, short clear definitions, and specifically format your content to be easily scannable "Short Answer (2-5 marks)" style. Use markdown bolding for key terms.`
+      : `You are a friendly, witty, and deeply helpful AI study buddy for a college student. Use analogies and simple terms to explain complex concepts. Don't use overly academic language.`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      systemInstruction: systemPrompt,
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: message }]
+        }
+      ]
+    });
+
+    const text = response.content?.parts?.map(p => p.text).join('') || 'No response';
+
+    res.json({ success: true, aiMessage: text });
+  } catch (error) {
+    console.error("Gemini Error:", error?.message);
+    
+    // Fallback response - provide helpful content even if API fails
+    const fallbackMessage = `I'm experiencing a temporary connection issue, but I'm still here to help! 
+
+**Your Question:** "${message.substring(0, 100)}..."
+
+Please try one of these:
+1. Rephrase your question more clearly
+2. Break it into smaller parts
+3. Try again in a few moments
+
+The platform continues to work with or without AI assistance!`;
+
+    res.json({ 
+      success: true, 
+      aiMessage: fallbackMessage,
+      isUsingFallback: true 
+    });
+  }
+});
+
+// 8. POST /ai-translate -> Smart Vocabulary Translator
+app.post('/api/ai-translate', async (req, res) => {
+  const { word } = req.body;
+  if (!word) { return res.status(400).json({ success: false, message: "Word is required" }); }
+
+  try {
+    const prompt = `Define the technical concept or word '${word}' strictly in the following JSON format:
+    {
+      "word": "${word}",
+      "meaning": "A 1-2 sentence extremely simple meaning.",
+      "explanation": "A slightly longer, student-friendly explanation using a fun real-world analogy.",
+      "hindi": "A short Hindi translation / context of the meaning."
+    }`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ]
+    });
+
+    const text = response.content?.parts?.map(p => p.text).join('') || '{}';
+    const data = JSON.parse(text);
+    res.json({ success: true, translation: data });
+  } catch (error) {
+    console.error("Gemini Translate Error:", error?.message);
+    
+    // Fallback translation response
+    const fallbackTranslation = {
+      word: word,
+      meaning: "A technical term used in academic or professional contexts.",
+      explanation: "This term refers to a specific concept in your field of study. Try searching for more context in your textbooks or course materials.",
+      hindi: "यह एक तकनीकी शब्द है।",
+      isUsingFallback: true
+    };
+    res.json({ success: true, translation: fallbackTranslation });
+  }
+});
+
+// 9. POST /analyze-doubt -> Smart AI Enhancer & Duplicate Checker
+app.post('/api/analyze-doubt', async (req, res) => {
+  const { title, description, recentTitles } = req.body;
+  
+  if (!title) { return res.status(400).json({ success: false, message: "Title is required" }); }
+
+  try {
+    const prompt = `You are an AI assistant for a college study forum.
+    Analyze this new question:
+    Title: "${title}"
+    Description: "${description || 'None'}"
+    
+    Here is a list of recent question titles already asked:
+    [${(recentTitles || []).join(', ')}]
+    
+    Your tasks:
+    1. Enhance the title to be clear, professional, and academic.
+    2. Extract exactly 2 relevant technical tags/subjects.
+    3. Check if the meaning/intent of the new question is severely similar to any of the recent questions (Semantic duplicate).
+    
+    Respond STRICTLY in this JSON format:
+    {
+      "enhancedTitle": "...",
+      "suggestedTags": ["...", "..."],
+      "isDuplicate": true/false,
+      "duplicateOf": "exact string of the matching title from recent questions if duplicate, else empty string"
+    }`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ]
+    });
+
+    const text = response.content?.parts?.map(p => p.text).join('') || '{}';
+    const data = JSON.parse(text);
+    res.json({ success: true, analysis: data });
+  } catch (error) {
+    console.error("Gemini Analysis Error:", error?.message);
+    
+    // Fallback analysis
+    const fallbackAnalysis = {
+      enhancedTitle: title || "General Academic Question",
+      suggestedTags: ["General", "Academic"],
+      isDuplicate: false,
+      duplicateOf: "",
+      isUsingFallback: true
+    };
+    res.json({ success: true, analysis: fallbackAnalysis });
+  }
+});
+
+// 10. POST /api/user-insights -> Calculate User Metrics & AI Feedback
+app.post('/api/user-insights', async (req, res) => {
+  const { uid, userFullName, doubts } = req.body;
+  if (!uid || !doubts) {
+    return res.status(400).json({ success: false, message: "Missing uid or doubts" });
+  }
+
+  // Generate real monthly chart data (Past 5 months)
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const currentMonth = new Date().getMonth();
+  const pastMonths = [];
+  for (let i = 4; i >= 0; i--) {
+    let m = currentMonth - i;
+    if (m < 0) m += 12;
+    pastMonths.push({ name: months[m], index: m, questions: 0, answers: 0 });
+  }
+
+  // Backend Calculations
+  const questionsAsked = doubts.filter(d => d.authorId === uid).length;
+  const upvotesReceived = doubts.filter(d => d.authorId === uid).reduce((acc, curr) => acc + (curr.upvotes || 0), 0);
+  
+  let answersGiven = 0;
+  doubts.forEach(d => {
+    // Tally Questions Asked by Month
+    if (d.authorId === uid && d.createdAt) {
+      const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
+      const m = date.getMonth();
+      const monthObj = pastMonths.find(x => x.index === m);
+      if (monthObj) monthObj.questions++;
+    }
+
+    if (d.answers) {
+      const myAnswers = d.answers.filter(a => a.author === userFullName);
+      answersGiven += myAnswers.length;
+      
+      // Tally Answers Given by Month
+      myAnswers.forEach(() => {
+        if (d.createdAt) {
+           const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
+           const m = date.getMonth();
+           const monthObj = pastMonths.find(x => x.index === m);
+           if (monthObj) monthObj.answers++;
+        }
+      });
+    }
+  });
+
+  const chartData = pastMonths.map(m => ({ name: m.name, questions: m.questions, answers: m.answers }));
+
+  try {
+    const prompt = `You are an encouraging college AI mentor. 
+    A student named ${userFullName || 'Student'} has the following stats on the study platform:
+    - Questions Asked: ${questionsAsked}
+    - Upvotes Received: ${upvotesReceived}
+    - Answers Given: ${answersGiven}
+    
+    Write a fun, single-sentence (max 15 words) personalized feedback for them. E.g., if they ask a lot but don't answer, encourage answering. If they have high upvotes, praise them.`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ]
+    });
+
+    const text = response.content?.parts?.map(p => p.text).join('') || 'Keep up the great work!';
+
+    res.json({
+      success: true,
+      data: {
+        questionsAsked,
+        upvotesReceived,
+        answersGiven,
+        chartData,
+        aiFeedback: text.replace(/"/g, '')
+      }
+    });
+  } catch (error) {
+    console.error("User Insights AI Error:", error?.message);
+    res.json({
+      success: true,
+      data: {
+        questionsAsked,
+        upvotesReceived,
+        answersGiven,
+        chartData,
+        aiFeedback: "Keep up the great work on the campus platform!",
+        isUsingFallback: true
+      }
+    });
+  }
+});
+
+// 11. POST /api/faculty-insights -> Calculate Faculty Metrics & AI Feedback
+app.post('/api/faculty-insights', async (req, res) => {
+  const { facultyName, requests, doubts } = req.body;
+  if (!requests || !doubts) {
+    return res.status(400).json({ success: false, message: "Missing data" });
+  }
+
+  // Use all requests for the demo so the insights graph populates with all database activity
+  const myRequests = requests;
+
+  // Calculate Metrics
+  const pendingRequests = myRequests.filter(r => r.status === 'Pending Advice' || r.status === 'Pending').length;
+  const actionedRequests = myRequests.filter(r => r.status === 'Approved' || r.status === 'Solved' || r.status === 'Declined').length;
+  
+  // Faculty answers across campus doubts
+  let doubtsAnswered = 0;
+  
+  // Generate real monthly chart data (Past 5 months)
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const currentMonth = new Date().getMonth();
+  const pastMonths = [];
+  for (let i = 4; i >= 0; i--) {
+    let m = currentMonth - i;
+    if (m < 0) m += 12;
+    pastMonths.push({ name: months[m], index: m, requests: 0, doubts: 0 });
+  }
+
+  // Tally Mentorships
+  myRequests.forEach(r => {
+    if (r.createdAt) {
+      const date = new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt);
+      const m = date.getMonth();
+      const monthObj = pastMonths.find(x => x.index === m);
+      if (monthObj) monthObj.requests++;
+    }
+  });
+
+  doubts.forEach(d => {
+    if (d.answers) {
+      const myAnswers = d.answers.filter(a => a.author === facultyName);
+      doubtsAnswered += myAnswers.length;
+      
+      // Tally Doubts solved
+      myAnswers.forEach(() => {
+        if (d.createdAt) {
+           const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
+           const m = date.getMonth();
+           const monthObj = pastMonths.find(x => x.index === m);
+           if (monthObj) monthObj.doubts++;
+        }
+      });
+    }
+  });
+
+  const chartData = pastMonths.map(m => ({ name: m.name, requests: m.requests, doubts: m.doubts }));
+
+  try {
+    const prompt = `You are a professional assistant evaluating a college professor. 
+    The professor named ${facultyName || 'Professor'} has the following stats:
+    - Pending Student Mentorship Requests: ${pendingRequests}
+    - Mentorships Fully Actioned: ${actionedRequests}
+    - Campus Doubts Answered: ${doubtsAnswered}
+    
+    Write a highly professional, encouraging 1-sentence (max 15 words) summary praising their dedication to student guidance, or nudging them respectfully to check pending requests if high.`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ]
+    });
+
+    const text = response.content?.parts?.map(p => p.text).join('') || 'Thank you for your continuous dedication!';
+
+    res.json({
+      success: true,
+      data: {
+        pendingRequests,
+        actionedRequests,
+        doubtsAnswered,
+        chartData,
+        aiFeedback: text.replace(/"/g, '').trim()
+      }
+    });
+  } catch (error) {
+    console.error("Faculty Insights AI Error:", error?.message);
+    res.json({
+      success: true,
+      data: {
+        pendingRequests,
+        actionedRequests,
+        doubtsAnswered,
+        chartData,
+        aiFeedback: "Thank you for your continuous dedication to guiding our students.",
+        isUsingFallback: true
+      }
+    });
+  }
+});
+
+// ==========================================
+// 🏃‍♂️ START SERVER
+// ==========================================
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Raisoni PeerSpace Backend running on port ${PORT}`);
+});
