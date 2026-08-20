@@ -545,9 +545,11 @@ app.post('/api/faculty-insights', async (req, res) => {
 });
 
 // ==========================================
-// 🏃‍♂️ START SERVER
-// ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Raisoni PeerSpace Backend running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Raisoni PeerSpace Backend running on port ${PORT}`);
+  });
+}
+
+export default app;
