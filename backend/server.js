@@ -35,6 +35,53 @@ const initGenAI = async () => {
 
 initGenAI();
 
+// Helper function to query AI (Groq API primary, Gemini secondary fallback)
+const callAI = async ({ systemPrompt, userPrompt }) => {
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey && !groqKey.includes('YOUR_')) {
+    try {
+      const messages = [];
+      if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+      messages.push({ role: 'user', content: userPrompt });
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'groq/compound',
+          messages
+        })
+      });
+      const data = await res.json();
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content;
+      }
+    } catch (err) {
+      console.warn("Groq API Call Error:", err.message);
+    }
+  }
+
+  // Gemini Fallback
+  if (genAI && genAI.models && genAI.models.generateContent) {
+    try {
+      const fullPrompt = systemPrompt ? `${systemPrompt}\n\nUser Question: ${userPrompt}` : userPrompt;
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }]
+      });
+      const text = response.content?.parts?.map(p => p.text).join('');
+      if (text) return text;
+    } catch (e) {
+      console.warn("Gemini API error:", e.message);
+    }
+  }
+
+  return null;
+};
+
 // Middleware
 // Configure CORS to allow origins from env (comma-separated) or default localhost Vite dev URL
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',');
@@ -253,46 +300,31 @@ app.post('/api/ai-chat', async (req, res) => {
     return res.status(400).json({ success: false, message: "Message is required" });
   }
 
-  try {
-    const systemPrompt = examMode 
-      ? `You are an expert strict college professor AI for Raisoni College. Present your answer using bullet points, short clear definitions, and specifically format your content to be easily scannable "Short Answer (2-5 marks)" style. Use markdown bolding for key terms.`
-      : `You are a friendly, witty, and deeply helpful AI study buddy for a college student. Use analogies and simple terms to explain complex concepts. Don't use overly academic language.`;
+  const systemPrompt = examMode 
+    ? `You are an expert strict college professor AI for Raisoni College. Present your answer using bullet points, short clear definitions, and specifically format your content to be easily scannable "Short Answer (2-5 marks)" style. Use markdown bolding for key terms.`
+    : `You are a friendly, witty, and deeply helpful AI study buddy for a college student at Raisoni College. Use analogies and simple terms to explain complex concepts. Don't use overly academic language.`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      systemInstruction: systemPrompt,
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: message }]
-        }
-      ]
-    });
+  const aiMessage = await callAI({ systemPrompt, userPrompt: message });
 
-    const text = response.content?.parts?.map(p => p.text).join('') || 'No response';
+  if (aiMessage) {
+    return res.json({ success: true, aiMessage });
+  }
 
-    res.json({ success: true, aiMessage: text });
-  } catch (error) {
-    console.error("Gemini Error:", error?.message);
-    
-    // Fallback response - provide helpful content even if API fails
-    const fallbackMessage = `I'm experiencing a temporary connection issue, but I'm still here to help! 
+  // Fallback response - provide helpful content even if API fails
+  const fallbackMessage = `I'm experiencing a temporary connection issue, but I'm still here to help! 
 
 **Your Question:** "${message.substring(0, 100)}..."
 
 Please try one of these:
 1. Rephrase your question more clearly
 2. Break it into smaller parts
-3. Try again in a few moments
+3. Try again in a few moments`;
 
-The platform continues to work with or without AI assistance!`;
-
-    res.json({ 
-      success: true, 
-      aiMessage: fallbackMessage,
-      isUsingFallback: true 
-    });
-  }
+  res.json({ 
+    success: true, 
+    aiMessage: fallbackMessage,
+    isUsingFallback: true 
+  });
 });
 
 // 8. POST /ai-translate -> Smart Vocabulary Translator
@@ -300,41 +332,32 @@ app.post('/api/ai-translate', async (req, res) => {
   const { word } = req.body;
   if (!word) { return res.status(400).json({ success: false, message: "Word is required" }); }
 
-  try {
-    const prompt = `Define the technical concept or word '${word}' strictly in the following JSON format:
-    {
-      "word": "${word}",
-      "meaning": "A 1-2 sentence extremely simple meaning.",
-      "explanation": "A slightly longer, student-friendly explanation using a fun real-world analogy.",
-      "hindi": "A short Hindi translation / context of the meaning."
-    }`;
+  const prompt = `Define the technical concept or word '${word}' strictly in the following JSON format without any markdown backticks:
+  {
+    "word": "${word}",
+    "meaning": "A 1-2 sentence extremely simple meaning.",
+    "explanation": "A slightly longer, student-friendly explanation using a fun real-world analogy.",
+    "hindi": "A short Hindi translation / context of the meaning."
+  }`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
-
-    const text = response.content?.parts?.map(p => p.text).join('') || '{}';
-    const data = JSON.parse(text);
-    res.json({ success: true, translation: data });
-  } catch (error) {
-    console.error("Gemini Translate Error:", error?.message);
-    
-    // Fallback translation response
-    const fallbackTranslation = {
-      word: word,
-      meaning: "A technical term used in academic or professional contexts.",
-      explanation: "This term refers to a specific concept in your field of study. Try searching for more context in your textbooks or course materials.",
-      hindi: "यह एक तकनीकी शब्द है।",
-      isUsingFallback: true
-    };
-    res.json({ success: true, translation: fallbackTranslation });
+  const text = await callAI({ userPrompt: prompt });
+  if (text) {
+    try {
+      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      return res.json({ success: true, translation: parsed });
+    } catch (e) {}
   }
+
+  // Fallback translation response
+  const fallbackTranslation = {
+    word: word,
+    meaning: "A technical term used in academic or professional contexts.",
+    explanation: "This term refers to a specific concept in your field of study. Try searching for more context in your textbooks or course materials.",
+    hindi: "यह एक तकनीकी शब्द है।",
+    isUsingFallback: true
+  };
+  res.json({ success: true, translation: fallbackTranslation });
 });
 
 // 9. POST /analyze-doubt -> Smart AI Enhancer & Duplicate Checker
@@ -343,54 +366,40 @@ app.post('/api/analyze-doubt', async (req, res) => {
   
   if (!title) { return res.status(400).json({ success: false, message: "Title is required" }); }
 
-  try {
-    const prompt = `You are an AI assistant for a college study forum.
-    Analyze this new question:
-    Title: "${title}"
-    Description: "${description || 'None'}"
-    
-    Here is a list of recent question titles already asked:
-    [${(recentTitles || []).join(', ')}]
-    
-    Your tasks:
-    1. Enhance the title to be clear, professional, and academic.
-    2. Extract exactly 2 relevant technical tags/subjects.
-    3. Check if the meaning/intent of the new question is severely similar to any of the recent questions (Semantic duplicate).
-    
-    Respond STRICTLY in this JSON format:
-    {
-      "enhancedTitle": "...",
-      "suggestedTags": ["...", "..."],
-      "isDuplicate": true/false,
-      "duplicateOf": "exact string of the matching title from recent questions if duplicate, else empty string"
-    }`;
+  const prompt = `You are an AI assistant for a college study forum.
+  Analyze this new question:
+  Title: "${title}"
+  Description: "${description || 'None'}"
+  
+  Here is a list of recent question titles already asked:
+  [${(recentTitles || []).join(', ')}]
+  
+  Respond STRICTLY in this JSON format without markdown backticks:
+  {
+    "enhancedTitle": "Clarified title string",
+    "suggestedTags": ["Tag1", "Tag2"],
+    "isDuplicate": false,
+    "duplicateOf": ""
+  }`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
-
-    const text = response.content?.parts?.map(p => p.text).join('') || '{}';
-    const data = JSON.parse(text);
-    res.json({ success: true, analysis: data });
-  } catch (error) {
-    console.error("Gemini Analysis Error:", error?.message);
-    
-    // Fallback analysis
-    const fallbackAnalysis = {
-      enhancedTitle: title || "General Academic Question",
-      suggestedTags: ["General", "Academic"],
-      isDuplicate: false,
-      duplicateOf: "",
-      isUsingFallback: true
-    };
-    res.json({ success: true, analysis: fallbackAnalysis });
+  const text = await callAI({ userPrompt: prompt });
+  if (text) {
+    try {
+      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      return res.json({ success: true, analysis: parsed });
+    } catch (e) {}
   }
+
+  // Fallback analysis
+  const fallbackAnalysis = {
+    enhancedTitle: title || "General Academic Question",
+    suggestedTags: ["General", "Academic"],
+    isDuplicate: false,
+    duplicateOf: "",
+    isUsingFallback: true
+  };
+  res.json({ success: true, analysis: fallbackAnalysis });
 });
 
 // 10. POST /api/user-insights -> Calculate User Metrics & AI Feedback
@@ -416,7 +425,6 @@ app.post('/api/user-insights', async (req, res) => {
   
   let answersGiven = 0;
   doubts.forEach(d => {
-    // Tally Questions Asked by Month
     if (d.authorId === uid && d.createdAt) {
       const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
       const m = date.getMonth();
@@ -428,7 +436,6 @@ app.post('/api/user-insights', async (req, res) => {
       const myAnswers = d.answers.filter(a => a.author === userFullName);
       answersGiven += myAnswers.length;
       
-      // Tally Answers Given by Month
       myAnswers.forEach(() => {
         if (d.createdAt) {
            const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
@@ -442,51 +449,27 @@ app.post('/api/user-insights', async (req, res) => {
 
   const chartData = pastMonths.map(m => ({ name: m.name, questions: m.questions, answers: m.answers }));
 
-  try {
-    const prompt = `You are an encouraging college AI mentor. 
-    A student named ${userFullName || 'Student'} has the following stats on the study platform:
-    - Questions Asked: ${questionsAsked}
-    - Upvotes Received: ${upvotesReceived}
-    - Answers Given: ${answersGiven}
-    
-    Write a fun, single-sentence (max 15 words) personalized feedback for them. E.g., if they ask a lot but don't answer, encourage answering. If they have high upvotes, praise them.`;
+  const prompt = `You are an encouraging college AI mentor for Raisoni College. 
+  A student named ${userFullName || 'Student'} has the following stats:
+  - Questions Asked: ${questionsAsked}
+  - Upvotes Received: ${upvotesReceived}
+  - Answers Given: ${answersGiven}
+  
+  Write a fun, single-sentence (max 15 words) personalized feedback for them.`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
+  const text = await callAI({ userPrompt: prompt });
+  const feedback = text ? text.replace(/"/g, '').trim() : 'Keep up the great work on the campus platform!';
 
-    const text = response.content?.parts?.map(p => p.text).join('') || 'Keep up the great work!';
-
-    res.json({
-      success: true,
-      data: {
-        questionsAsked,
-        upvotesReceived,
-        answersGiven,
-        chartData,
-        aiFeedback: text.replace(/"/g, '')
-      }
-    });
-  } catch (error) {
-    console.error("User Insights AI Error:", error?.message);
-    res.json({
-      success: true,
-      data: {
-        questionsAsked,
-        upvotesReceived,
-        answersGiven,
-        chartData,
-        aiFeedback: "Keep up the great work on the campus platform!",
-        isUsingFallback: true
-      }
-    });
-  }
+  res.json({
+    success: true,
+    data: {
+      questionsAsked,
+      upvotesReceived,
+      answersGiven,
+      chartData,
+      aiFeedback: feedback
+    }
+  });
 });
 
 // 11. POST /api/faculty-insights -> Calculate Faculty Metrics & AI Feedback
@@ -496,17 +479,12 @@ app.post('/api/faculty-insights', async (req, res) => {
     return res.status(400).json({ success: false, message: "Missing data" });
   }
 
-  // Use all requests for the demo so the insights graph populates with all database activity
   const myRequests = requests;
-
-  // Calculate Metrics
   const pendingRequests = myRequests.filter(r => r.status === 'Pending Advice' || r.status === 'Pending').length;
   const actionedRequests = myRequests.filter(r => r.status === 'Approved' || r.status === 'Solved' || r.status === 'Declined').length;
   
-  // Faculty answers across campus doubts
   let doubtsAnswered = 0;
   
-  // Generate real monthly chart data (Past 5 months)
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const currentMonth = new Date().getMonth();
   const pastMonths = [];
@@ -516,7 +494,6 @@ app.post('/api/faculty-insights', async (req, res) => {
     pastMonths.push({ name: months[m], index: m, requests: 0, doubts: 0 });
   }
 
-  // Tally Mentorships
   myRequests.forEach(r => {
     if (r.createdAt) {
       const date = new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt);
@@ -531,7 +508,6 @@ app.post('/api/faculty-insights', async (req, res) => {
       const myAnswers = d.answers.filter(a => a.author === facultyName);
       doubtsAnswered += myAnswers.length;
       
-      // Tally Doubts solved
       myAnswers.forEach(() => {
         if (d.createdAt) {
            const date = new Date(d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt);
@@ -545,51 +521,27 @@ app.post('/api/faculty-insights', async (req, res) => {
 
   const chartData = pastMonths.map(m => ({ name: m.name, requests: m.requests, doubts: m.doubts }));
 
-  try {
-    const prompt = `You are a professional assistant evaluating a college professor. 
-    The professor named ${facultyName || 'Professor'} has the following stats:
-    - Pending Student Mentorship Requests: ${pendingRequests}
-    - Mentorships Fully Actioned: ${actionedRequests}
-    - Campus Doubts Answered: ${doubtsAnswered}
-    
-    Write a highly professional, encouraging 1-sentence (max 15 words) summary praising their dedication to student guidance, or nudging them respectfully to check pending requests if high.`;
+  const prompt = `You are a professional assistant evaluating a college professor. 
+  The professor named ${facultyName || 'Professor'} has stats:
+  - Pending Mentorships: ${pendingRequests}
+  - Actioned: ${actionedRequests}
+  - Doubts Answered: ${doubtsAnswered}
+  
+  Write a highly professional, encouraging 1-sentence (max 15 words) summary.`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
+  const text = await callAI({ userPrompt: prompt });
+  const feedback = text ? text.replace(/"/g, '').trim() : 'Thank you for your continuous dedication to guiding our students.';
 
-    const text = response.content?.parts?.map(p => p.text).join('') || 'Thank you for your continuous dedication!';
-
-    res.json({
-      success: true,
-      data: {
-        pendingRequests,
-        actionedRequests,
-        doubtsAnswered,
-        chartData,
-        aiFeedback: text.replace(/"/g, '').trim()
-      }
-    });
-  } catch (error) {
-    console.error("Faculty Insights AI Error:", error?.message);
-    res.json({
-      success: true,
-      data: {
-        pendingRequests,
-        actionedRequests,
-        doubtsAnswered,
-        chartData,
-        aiFeedback: "Thank you for your continuous dedication to guiding our students.",
-        isUsingFallback: true
-      }
-    });
-  }
+  res.json({
+    success: true,
+    data: {
+      pendingRequests,
+      actionedRequests,
+      doubtsAnswered,
+      chartData,
+      aiFeedback: feedback
+    }
+  });
 });
 
 // ==========================================

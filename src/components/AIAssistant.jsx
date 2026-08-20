@@ -9,7 +9,7 @@ export default function AIAssistant() {
   
   // Chat State
   const [chatMessages, setChatMessages] = useState([
-    { role: 'ai', content: "Hi! I'm your PeerSpace AI Assistant powered by Google Gemini. Ask me any technical topic, and I'll help you prepare!" }
+    { role: 'ai', content: "Hi! I'm your PeerSpace AI Assistant. Ask me any technical topic, and I'll help you prepare!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -135,7 +135,7 @@ export default function AIAssistant() {
               <div className="flex-1">
                 <h3 className="font-extrabold text-lg flex items-center gap-2">
                   PeerSpace AI
-                  <span className="bg-blue-600/30 text-blue-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-blue-500/30">Gemini</span>
+                  <span className="bg-gradient-to-r from-purple-500/30 to-orange-500/30 text-orange-300 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border border-orange-500/30 flex items-center gap-1"><Sparkles className="w-3 h-3 text-orange-400 animate-pulse" /> Live</span>
                 </h3>
                 <p className="text-xs text-blue-300 font-medium">Your personal campus study assistant</p>
               </div>
@@ -195,10 +195,22 @@ export default function AIAssistant() {
                   </div>
                 ))}
                 {isChatLoading && (
-                   <div className="flex justify-start">
-                     <div className="max-w-[85%] bg-white border border-blue-100 text-slate-700 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-2">
-                       <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-                       <span className="text-sm font-medium">Gemini is thinking...</span>
+                   <div className="flex justify-start animate-in fade-in duration-200">
+                     <div className="max-w-[85%] bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 border border-purple-500/30 text-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-lg flex items-center gap-3">
+                       <div className="relative flex items-center justify-center">
+                         <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
+                         <div className="absolute inset-0 bg-orange-500 rounded-full blur-sm opacity-50 animate-pulse"></div>
+                       </div>
+                       <div className="flex items-center gap-1.5">
+                         <span className="text-xs font-bold bg-gradient-to-r from-purple-300 via-orange-300 to-amber-200 bg-clip-text text-transparent tracking-wide">
+                           PeerSpace AI is thinking
+                         </span>
+                         <span className="flex gap-1 items-center ml-1">
+                           <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                           <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                           <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"></span>
+                         </span>
+                       </div>
                      </div>
                    </div>
                 )}
@@ -211,7 +223,7 @@ export default function AIAssistant() {
                       <BookA className="w-6 h-6 text-blue-600" />
                    </div>
                    <h4 className="font-extrabold text-slate-800 mb-1">Confused by a technical word?</h4>
-                   <p className="text-xs text-slate-500 font-medium px-4">Enter a difficult jargon or concept. Gemini will simplify it for you instantly.</p>
+                   <p className="text-xs text-slate-500 font-medium px-4">Enter a difficult jargon or concept. PeerSpace AI will simplify it for you instantly.</p>
                 </div>
 
                 <form onSubmit={handleTranslate} className="mb-4 relative">
@@ -273,7 +285,7 @@ export default function AIAssistant() {
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={examMode ? "Ask Gemini for exam notes..." : "Ask your AI buddy..."}
+                  placeholder={examMode ? "Ask AI for exam notes..." : "Ask your AI buddy..."}
                   disabled={isChatLoading}
                   className="w-full pl-4 pr-12 py-3 bg-slate-100 disabled:bg-slate-50 focus:bg-white border-2 border-transparent focus:border-blue-400 rounded-2xl outline-none font-medium text-sm text-slate-700 placeholder:text-slate-400 transition-all shadow-inner"
                 />

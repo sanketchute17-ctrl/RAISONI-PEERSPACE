@@ -3,7 +3,8 @@ import { User, LogIn, Ghost, UserPlus, AlertCircle, Volume2, VolumeX, Eye, EyeOf
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -52,6 +53,8 @@ export default function Login() {
     return () => clearInterval(timer);
   }, []);
 
+  const { loginAsGuest } = useAuth();
+
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!emailOrReg || !password) return;
@@ -73,44 +76,63 @@ export default function Login() {
 
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, parsedEmail, password);
-        navigate(role === 'faculty' ? '/faculty-dashboard' : '/dashboard');
+        const userCredential = await signInWithEmailAndPassword(auth, parsedEmail, password);
+        const user = userCredential.user;
+
+        // Fetch actual user profile from Firestore to determine real stored role
+        let storedRole = role;
+        try {
+          const userDocSnap = await getDoc(doc(db, 'users', user.uid));
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            if (data.role) {
+              storedRole = data.role.toLowerCase().trim();
+            }
+          }
+        } catch (e) {
+          console.warn("Unable to fetch user document on login:", e);
+        }
+
+        navigate(storedRole === 'faculty' ? '/faculty-dashboard' : '/dashboard');
       } else {
         // Create user
         const userCredential = await createUserWithEmailAndPassword(auth, parsedEmail, password);
         const user = userCredential.user;
 
         // Save data to Firestore based on role
-        const userData = role === 'student' ? {
+        const selectedDept = role === 'student' ? branch : facultyDept;
+        const userData = {
           uid: user.uid,
           email: user.email,
-          role: 'student',
+          role: role,
           fullName: fullName,
           regNo: regNo,
-          dob: dob,
-          branch: branch,
-          semester: semester,
-          startYear: startYear,
-          endYear: endYear,
-          profilePicUrl: '',
-          createdAt: new Date().toISOString()
-        } : {
-          uid: user.uid,
-          email: user.email,
-          role: 'faculty',
-          fullName: fullName,
           empId: regNo,
-          department: facultyDept,
+          department: selectedDept,
+          branch: selectedDept,
+          dob: dob || '',
+          semester: semester || '',
+          startYear: startYear || '',
+          endYear: endYear || '',
           profilePicUrl: '',
+          about: '',
           createdAt: new Date().toISOString()
         };
 
         await setDoc(doc(db, 'users', user.uid), userData);
 
-        alert('Account created successfully! You are securely authenticated via Firebase.');
+        alert('Account created successfully! You can now log in with your credentials.');
         setIsLogin(true);
       }
     } catch (err) {
+      // If Firebase API key is invalid or unconfigured, log in using demo mode so user isn't blocked
+      const isApiKeyError = err.code?.includes('api-key') || err.message?.includes('api-key') || err.message?.includes('API key');
+      if (isApiKeyError) {
+        console.warn("Firebase API key not configured/invalid. Logging in using Demo Mode.");
+        loginAsGuest(role);
+        navigate(role === 'faculty' ? '/faculty-dashboard' : '/dashboard');
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -355,7 +377,7 @@ export default function Login() {
                 <div className="flex-grow border-t border-white/10"></div>
              </div>
 
-             <div className="flex justify-center">
+             <div className="flex flex-col gap-3 justify-center">
               <button 
                 type="button"
                 onClick={() => {
@@ -369,6 +391,17 @@ export default function Login() {
                 ) : (
                   <><LogIn className="w-4 h-4 text-blue-400" /> Back to Login</>
                 )}
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => {
+                  loginAsGuest(role);
+                  navigate(role === 'faculty' ? '/faculty-dashboard' : '/dashboard');
+                }} 
+                className="w-full max-w-sm flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500/20 to-purple-600/20 hover:from-orange-500/30 hover:to-purple-600/30 border border-orange-500/40 text-orange-200 py-3.5 px-4 rounded-xl font-bold transition-all text-sm shadow-md hover:scale-[1.01]"
+              >
+                <Ghost className="w-4 h-4 text-orange-400" /> Continue in Guest / Demo Mode
               </button>
             </div>
           </div>

@@ -7,9 +7,10 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@google/genai": "^2.18.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
