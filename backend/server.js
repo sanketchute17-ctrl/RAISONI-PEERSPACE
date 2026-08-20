@@ -37,46 +37,54 @@ initGenAI();
 
 // Helper function to query AI (Groq API primary, Gemini secondary fallback)
 const callAI = async ({ systemPrompt, userPrompt }) => {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey && !groqKey.includes('YOUR_')) {
-    try {
-      const messages = [];
-      if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
-      messages.push({ role: 'user', content: userPrompt });
+  let debugLog = [];
+  const rawKey = process.env.GROQ_API_KEY || 
+                 process.env.GROK_API_KEY || 
+                 process.env.GROQ_KEY || 
+                 process.env.VITE_GROQ_API_KEY || 
+                 process.env.VITE_GROK_API_KEY;
 
-      // Try primary Groq model: llama-3.3-70b-versatile, fallback to llama-3.1-8b-instant
-      const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
-      for (const model of groqModels) {
-        try {
-          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${groqKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model,
-              messages
-            })
-          });
-          const data = await res.json();
-          if (data.choices && data.choices[0] && data.choices[0].message) {
-            return data.choices[0].message.content;
-          }
-          if (data.error) {
-            console.warn(`Groq API (${model}) returned error:`, data.error.message || JSON.stringify(data.error));
-          }
-        } catch (mErr) {
-          console.warn(`Groq API (${model}) fetch error:`, mErr.message);
+  const groqKey = rawKey ? rawKey.trim().replace(/^["']|["']$/g, '') : null;
+
+  if (groqKey && !groqKey.includes('YOUR_')) {
+    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
+    for (const model of groqModels) {
+      try {
+        const messages = [];
+        if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+        messages.push({ role: 'user', content: userPrompt });
+
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model,
+            messages
+          })
+        });
+        const data = await res.json();
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          return { text: data.choices[0].message.content };
         }
+        if (data.error) {
+          console.warn(`Groq API (${model}) returned error:`, data.error.message || JSON.stringify(data.error));
+          debugLog.push(`Groq (${model}): ${data.error.message || 'API error'}`);
+        }
+      } catch (mErr) {
+        console.warn(`Groq API (${model}) fetch error:`, mErr.message);
+        debugLog.push(`Groq (${model}) fetch error: ${mErr.message}`);
       }
-    } catch (err) {
-      console.warn("Groq API Call Error:", err.message);
     }
+  } else {
+    debugLog.push("No GROQ_API_KEY / GROK_API_KEY environment variable detected on server.");
   }
 
   // Gemini Fallback
-  if (genAI && genAI.models && genAI.models.generateContent) {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  if (genAI && genAI.models && genAI.models.generateContent && geminiKey) {
     try {
       const fullPrompt = systemPrompt ? `${systemPrompt}\n\nUser Question: ${userPrompt}` : userPrompt;
       const response = await genAI.models.generateContent({
@@ -84,13 +92,14 @@ const callAI = async ({ systemPrompt, userPrompt }) => {
         contents: [{ role: 'user', parts: [{ text: fullPrompt }] }]
       });
       const text = response.content?.parts?.map(p => p.text).join('');
-      if (text) return text;
+      if (text) return { text };
     } catch (e) {
       console.warn("Gemini API error:", e.message);
+      debugLog.push(`Gemini: ${e.message}`);
     }
   }
 
-  return null;
+  return { text: null, errorDetail: debugLog.join(' | ') };
 };
 
 // Configure CORS to allow origins from env, vercel domains, or dev URLs
@@ -307,7 +316,6 @@ app.patch('/api/faculty-requests/:id', (req, res) => {
   res.json({ success: true, data: guidanceRequests[requestIndex] });
 });
 
-// 7. POST /ai-chat -> AI Assistant functionality
 app.post('/api/ai-chat', async (req, res) => {
   const { message, examMode } = req.body;
   
@@ -319,14 +327,16 @@ app.post('/api/ai-chat', async (req, res) => {
     ? `You are an expert strict college professor AI for Raisoni College. Present your answer using bullet points, short clear definitions, and specifically format your content to be easily scannable "Short Answer (2-5 marks)" style. Use markdown bolding for key terms.`
     : `You are a friendly, witty, and deeply helpful AI study buddy for a college student at Raisoni College. Use analogies and simple terms to explain complex concepts. Don't use overly academic language.`;
 
-  const aiMessage = await callAI({ systemPrompt, userPrompt: message });
+  const aiResult = await callAI({ systemPrompt, userPrompt: message });
 
-  if (aiMessage) {
-    return res.json({ success: true, aiMessage });
+  if (aiResult && aiResult.text) {
+    return res.json({ success: true, aiMessage: aiResult.text });
   }
 
+  const errorReason = aiResult?.errorDetail ? `\n\n*(Diagnostics: ${aiResult.errorDetail})*` : '';
+
   // Fallback response - provide helpful content even if API fails
-  const fallbackMessage = `I'm experiencing a temporary connection issue, but I'm still here to help! 
+  const fallbackMessage = `I'm experiencing a temporary connection issue, but I'm still here to help! ${errorReason}
 
 **Your Question:** "${message.substring(0, 100)}..."
 
