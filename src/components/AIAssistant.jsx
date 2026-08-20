@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Sparkles, BookA, Send, Settings, BookOpen, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function AIAssistant() {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'translator'
   const [examMode, setExamMode] = useState(false);

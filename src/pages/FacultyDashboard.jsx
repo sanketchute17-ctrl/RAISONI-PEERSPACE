@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import DoubtCard from '../components/DoubtCard';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
 
 export default function FacultyDashboard() {
   const navigate = useNavigate();
@@ -378,6 +378,56 @@ export default function FacultyDashboard() {
              </div>
           </div>
         </header>
+
+        {/* Mobile Sub-Header Navigation Strip (< 768px) */}
+        <div className="md:hidden bg-[#0f172a] border-b border-slate-800 px-3 py-2 flex items-center gap-1.5 overflow-x-auto shrink-0 z-10 hidescrollbar">
+          <button
+            onClick={() => { setActiveView('mentorship'); setActiveTab('Pending Advice'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'mentorship' && activeTab === 'Pending Advice' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Pending ({myRequests.filter(r => r.status === 'Pending Advice').length})
+          </button>
+          <button
+            onClick={() => { setActiveView('mentorship'); setActiveTab('Approved'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'mentorship' && activeTab === 'Approved' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Approved
+          </button>
+          <button
+            onClick={() => { setActiveView('mentorship'); setActiveTab('Declined'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'mentorship' && activeTab === 'Declined' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Declined
+          </button>
+          <button
+            onClick={() => { setActiveView('campus_doubts'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'campus_doubts' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Campus Doubts
+          </button>
+          <button
+            onClick={() => { setActiveView('insights'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'insights' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Insights
+          </button>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-800 text-slate-300"
+          >
+            My Profile
+          </button>
+        </div>
 
         {/* Dynamic Content Area */}
         {activeView === 'mentorship' ? (

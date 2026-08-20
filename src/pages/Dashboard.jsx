@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import AIAssistant from '../components/AIAssistant';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
 
 export default function Dashboard() {
   const location = useLocation();
@@ -529,11 +529,82 @@ export default function Dashboard() {
         </div>
       </nav>
 
+      {/* Mobile Navigation Strip (Visible on mobile screens < 768px) */}
+      <div className="md:hidden bg-[#0f172a] border-b border-blue-900 px-3 py-2 space-y-2 sticky top-[61px] z-30 shadow-md">
+        {/* Mobile Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search syllabus topics, tags..." 
+            className="w-full pl-9 pr-10 py-1.5 bg-blue-950 border border-blue-800 rounded-full text-xs font-medium text-slate-100 placeholder:text-slate-400 outline-none"
+          />
+          <button
+            onClick={startSearchVoiceRecognition}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white"
+          >
+            {isListeningSearch ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" /> : <Mic className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {/* Scrollable Nav Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 hidescrollbar">
+          <button
+            onClick={() => setActiveView('doubts')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'doubts' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Hash className="w-3.5 h-3.5" /> Doubts
+          </button>
+          <button
+            onClick={() => setActiveView('mentorship')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <ShieldQuestion className="w-3.5 h-3.5" /> Mentorship
+          </button>
+          <button
+            onClick={() => setActiveView('insights')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'insights' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <BarChart2 className="w-3.5 h-3.5" /> Insights
+          </button>
+          <button
+            onClick={() => setActiveView('history')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'history' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <History className="w-3.5 h-3.5" /> History
+          </button>
+          <button
+            onClick={() => setActiveView('bookmarks')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'bookmarks' ? 'bg-yellow-500 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Bookmark className="w-3.5 h-3.5" /> Saved
+          </button>
+          <button
+            onClick={() => setIsAboutOpen(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-blue-950 text-slate-300 border border-blue-900"
+          >
+            <Info className="w-3.5 h-3.5" /> About
+          </button>
+        </div>
+      </div>
+
       {/* Main 3-Column Layout */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 items-start">
         
         {/* LEFT SIDEBAR: Navigation & Categorization */}
-        <aside className="hidden lg:block w-64 shrink-0 top-24 sticky space-y-6">
+        <aside className="hidden md:block w-64 shrink-0 top-24 sticky space-y-6">
           
           {/* Global Navigation */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100">

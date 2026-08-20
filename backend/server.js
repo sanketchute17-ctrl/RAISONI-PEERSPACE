@@ -44,20 +44,31 @@ const callAI = async ({ systemPrompt, userPrompt }) => {
       if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
       messages.push({ role: 'user', content: userPrompt });
 
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'groq/compound',
-          messages
-        })
-      });
-      const data = await res.json();
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        return data.choices[0].message.content;
+      // Try primary Groq model: llama-3.3-70b-versatile, fallback to llama-3.1-8b-instant
+      const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      for (const model of groqModels) {
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${groqKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model,
+              messages
+            })
+          });
+          const data = await res.json();
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            return data.choices[0].message.content;
+          }
+          if (data.error) {
+            console.warn(`Groq API (${model}) returned error:`, data.error.message || JSON.stringify(data.error));
+          }
+        } catch (mErr) {
+          console.warn(`Groq API (${model}) fetch error:`, mErr.message);
+        }
       }
     } catch (err) {
       console.warn("Groq API Call Error:", err.message);
