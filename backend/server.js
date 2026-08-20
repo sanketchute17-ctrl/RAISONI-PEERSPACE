@@ -47,39 +47,67 @@ const callAI = async ({ systemPrompt, userPrompt }) => {
   const groqKey = rawKey ? rawKey.trim().replace(/^["']|["']$/g, '') : null;
 
   if (groqKey && !groqKey.includes('YOUR_')) {
-    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
-    for (const model of groqModels) {
-      try {
+    try {
+      // Step 1: Query Groq /v1/models to verify key & get active model IDs
+      const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { 'Authorization': `Bearer ${groqKey}` }
+      });
+      const modelsData = await modelsRes.json();
+
+      if (modelsRes.status === 401 || modelsRes.status === 403 || modelsData.error) {
+        debugLog.push(`Groq Key Error (${modelsRes.status}): ${modelsData.error?.message || 'Invalid API Key'}`);
+      } else if (modelsData.data && modelsData.data.length > 0) {
+        // Filter out non-chat models (like whisper, guard)
+        const availableModelIds = modelsData.data
+          .map(m => m.id)
+          .filter(id => !id.includes('whisper') && !id.includes('safetensors') && !id.includes('vision') && !id.includes('guard'));
+
+        const preferredList = [
+          'llama-3.3-70b-versatile',
+          'llama-3.1-8b-instant',
+          'llama3-70b-8192',
+          'llama3-8b-8192',
+          'gemma2-9b-it',
+          ...availableModelIds
+        ];
+
         const messages = [];
         if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: userPrompt });
 
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${groqKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model,
-            messages
-          })
-        });
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          return { text: data.choices[0].message.content };
+        const tried = new Set();
+        for (const model of preferredList) {
+          if (!model || tried.has(model)) continue;
+          tried.add(model);
+
+          try {
+            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${groqKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ model, messages })
+            });
+            const data = await res.json();
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+              return { text: data.choices[0].message.content };
+            }
+            if (data.error) {
+              debugLog.push(`${model}: ${data.error.message || 'Error'}`);
+            }
+          } catch (e) {
+            debugLog.push(`${model}: ${e.message}`);
+          }
         }
-        if (data.error) {
-          console.warn(`Groq API (${model}) returned error:`, data.error.message || JSON.stringify(data.error));
-          debugLog.push(`Groq (${model}): ${data.error.message || 'API error'}`);
-        }
-      } catch (mErr) {
-        console.warn(`Groq API (${model}) fetch error:`, mErr.message);
-        debugLog.push(`Groq (${model}) fetch error: ${mErr.message}`);
+      } else {
+        debugLog.push("Groq returned empty models list.");
       }
+    } catch (err) {
+      debugLog.push(`Groq fetch exception: ${err.message}`);
     }
   } else {
-    debugLog.push("No GROQ_API_KEY / GROK_API_KEY environment variable detected on server.");
+    debugLog.push("No GROQ_API_KEY or GROK_API_KEY environment variable detected on Vercel.");
   }
 
   // Gemini Fallback
@@ -94,7 +122,6 @@ const callAI = async ({ systemPrompt, userPrompt }) => {
       const text = response.content?.parts?.map(p => p.text).join('');
       if (text) return { text };
     } catch (e) {
-      console.warn("Gemini API error:", e.message);
       debugLog.push(`Gemini: ${e.message}`);
     }
   }
