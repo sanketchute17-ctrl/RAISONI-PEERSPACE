@@ -1,108 +1,137 @@
-# RAISONI-PEERSPACE
+# 🎓 Raisoni PeerSpace
 
-## Project Description
+> **The Next-Gen Campus Collaboration & AI Learning Platform for Raisoni College**
 
-Raisoni PeerSpace is a React + Vite frontend application with an Express backend. Ye project ek campus community platform banane ke liye hai jahan students, faculty, aur admin alag-alag services use kar sakte hain.
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5-purple.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38bdf8.svg)](https://tailwindcss.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-ffca28.svg)](https://firebase.google.com/)
+[![Groq AI](https://img.shields.io/badge/Groq-Llama_3.3_70B-f97316.svg)](https://groq.com/)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed-Vercel-000000.svg)](https://vercel.com/)
 
-## What is included
+---
 
-- Frontend: React, Vite, React Router, Firebase, Tailwind-style CSS setup
-- Backend: Express, CORS, dotenv, Google Gemini AI integration via `@google/genai`
-- Dev tools: ESLint, Nodemon, Vite development server
+## 🌟 What is Raisoni PeerSpace?
 
-## Run commands
+**Raisoni PeerSpace** is a unified digital campus platform built for college students and faculty. It bridges the gap between academic doubts, peer collaboration, faculty mentorship, and AI-powered study assistance — all in one clean, easy-to-use application.
 
-### 1. Frontend setup
+Whether a student is confused by a complex Java concept, wants an anonymous opinion on a syllabus topic, or needs direct mentorship from a professor, **PeerSpace makes campus learning interactive, fast, and accessible 24/7.**
 
-```bash
-cd "C:\Users\madha\OneDrive\Desktop\Raisoni PeerSpace"
-npm install
-npm run dev
-```
+---
 
-- `npm install` - install frontend dependencies
-- `npm run dev` - locally frontend server start karega
-- `npm run build` - production build banaega
-- `npm run preview` - build preview dekhega
-- `npm run lint` - code linting check karega
+## 🚀 Why Colleges Should Adopt PeerSpace (Key Advantages)
 
-### 2. Backend setup
+### 💡 For Students
+- **Instant 24/7 AI Assistance**: Ask complex technical doubts anytime with PeerSpace AI and get instant simplified explanations.
+- **Judgement-Free Learning**: Ask questions anonymously using **Ghost Protocol** without fear of being judged by peers.
+- **Smart Peer Study Feed**: View top-voted syllabus questions, answer peers, and earn **XP Points** to climb the Campus Leaderboard.
+- **Direct Faculty Access**: Submit career or subject mentorship requests directly to relevant faculty members.
 
-```bash
-cd "C:\Users\madha\OneDrive\Desktop\Raisoni PeerSpace\backend"
-npm install
-npm run dev
-```
+### 👩‍🏫 For Faculty & Professors
+- **Streamlined Mentorship Inbox**: Review, approve, or decline student guidance requests in an organized dashboard.
+- **Campus Doubt Moderation**: Verify student answers and provide authoritative academic guidance.
+- **Faculty Analytics**: Track engagement metrics, pending advice count, and student interaction trends.
 
-- `npm install` - backend dependencies install karega
-- `npm run dev` - backend ko `nodemon server.js` se run karega (auto restart)
-- `npm start` - backend ko normal `node server.js` se run karega
+### 🏫 For College Management
+- **Boosts Academic Performance**: Encourages continuous peer learning and quick doubt resolution.
+- **Digital Records & Insights**: Replaces unorganized WhatsApp groups with a structured campus platform.
+- **Modern Campus Branding**: Positions the institution at the forefront of AI-driven education technology.
 
-### 3. Environment variables
+---
 
-Backend ke liye ek `.env` file create karein:
+## 🔥 Features Overview
+
+| Feature | Description |
+| :--- | :--- |
+| 💬 **Campus Doubts Feed** | Real-time question feed with tags, attachments, upvotes, and voice search. |
+| 👻 **Ghost Protocol** | Option to ask or answer doubts 100% anonymously for hesitant students. |
+| 🤖 **PeerSpace AI Assistant** | AI-powered Exam Assistant & Technical Vocabulary Translator (Groq Llama 3.3 70B & Gemini). |
+| 🛡️ **Expert Mentorship** | Student-to-Faculty request channel for subject, career, and research advice. |
+| 📊 **Interactive Insights** | Recharts analytics graphs showing monthly interaction trends and XP rank progression. |
+| 📱 **Full Mobile Responsive** | Optimized for phones, tablets, and Mobile Chrome Desktop Mode. |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, Recharts, React Router
+- **Backend API**: Node.js, Express.js, CORS
+- **Database & Auth**: Firebase Auth, Firestore Database, Firebase Storage
+- **AI Engines**: Groq API (`llama-3.3-70b-versatile`), Google Gemini AI (`gemini-2.0-flash`)
+- **Deployment**: Vercel (Serverless Functions & Static Hosting)
+
+---
+
+## 🔑 Environment Variables & API Key Setup
+
+Create a `.env` file in the root folder for local development:
 
 ```env
-GEMINI_API_KEY=YOUR_GOOGLE_GEMINI_API_KEY
+# API Base URL (Leave empty in production on Vercel)
+VITE_API_BASE_URL=http://localhost:5000
+
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_id
+VITE_FIREBASE_APP_ID=your_app_id
+
+# AI API Key (Set in Vercel Environment Variables for production)
+GROQ_API_KEY=your_groq_api_key_starting_with_gsk_
 ```
 
-> Note: `backend/.env` `.gitignore` me already ignore ho raha hai, isliye secret keys GitHub pe push nahi hongi.
+---
 
-## Used Technologies / Jo use kiya gaya
+## 💻 How to Run Locally
 
-- React 18
-- Vite
-- React Router DOM
-- Firebase
-- Express
-- Node.js
-- Nodemon
-- ESLint
-- Tailwind-style CSS / custom CSS
-- Google Gemini AI SDK (`@google/genai`)
-- CORS
-- dotenv
+### 1. Clone the repository
+```bash
+git clone https://github.com/sanketchute17-ctrl/RAISONI-PEERSPACE.git
+cd RAISONI-PEERSPACE
+```
 
-## Folder structure
+### 2. Install Frontend & Backend Dependencies
+```bash
+# Install frontend packages
+npm install
 
-- `src/` - frontend components, pages, CSS, assets
-- `backend/` - Express server, environment settings
-- `public/` - static files
-- `package.json` - frontend scripts and dependencies
-- `backend/package.json` - backend scripts and dependencies
+# Install backend packages
+cd backend
+npm install
+cd ..
+```
 
-## Future scope / Possible improvements
+### 3. Start Local Development Servers
+Open **two terminals**:
 
-1. Authentication system add karna (Firebase Auth ya custom login)
-2. User profile pages aur role-based access (student, faculty, admin)
-3. Real-time chat / notifications support
-4. Database integration (Firebase Firestore, MongoDB, ya SQL)
-5. Search aur filter features for doubts, posts, lost and found
-6. File upload support (images, documents)
-7. Better mobile responsiveness aur UI improvements
-8. Admin dashboard for moderation and user management
-9. Deployment on Netlify/Vercel (frontend) aur Heroku/Render (backend)
-10. Unit tests aur integration tests add karna
+- **Terminal 1 (Backend Server)**:
+  ```bash
+  cd backend
+  npm run dev
+  ```
+  *(Runs backend API on `http://localhost:5000`)*
 
-## GitHub repository
+- **Terminal 2 (Frontend App)**:
+  ```bash
+  npm run dev
+  ```
+  *(Runs Vite frontend on `http://localhost:5173`)*
 
-`https://github.com/sanketchute17-ctrl/RAISONI-PEERSPACE.git`
+---
 
+## 🌐 Deploying on Vercel
 
-**##RUN COMMANDS**
-on first terminal :cd backend
-and then open new terminal : npm run dev
+1. Push your code to GitHub.
+2. Import your repository into [Vercel](https://vercel.com).
+3. Under **Settings > Environment Variables**, add:
+   - `GROQ_API_KEY` = your Groq API key (`gsk_...`)
+   - Firebase variables (optional, fallback defaults are included).
+4. Click **Deploy**. Vercel will automatically build the React frontend and Express API routes.
 
+---
 
-## Notes
+## 📜 License & Copyright
 
-- `.gitignore` already configured to ignore `node_modules`, `dist`, `.vscode`, aur environment files
-- Agar backend se AI responses use karni hai to correct `GEMINI_API_KEY` set karna zaroori hai
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Created for **G H Raisoni College of Engineering and Management**. All rights reserved.
