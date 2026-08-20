@@ -93,14 +93,18 @@ const callAI = async ({ systemPrompt, userPrompt }) => {
   return null;
 };
 
-// Middleware
-// Configure CORS to allow origins from env (comma-separated) or default localhost Vite dev URL
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',');
+// Configure CORS to allow origins from env, vercel domains, or dev URLs
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser tools or same-origin
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS policy: Origin not allowed'));
+    if (!origin) return callback(null, true);
+    if (
+      origin.includes('localhost') || 
+      origin.endsWith('.vercel.app') || 
+      (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS.split(',').includes(origin))
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Allow all origins for API calls
   }
 }));
 

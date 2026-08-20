@@ -50,7 +50,7 @@ export default function AIAssistant() {
         setChatMessages(prev => [...prev, { role: 'ai', content: data.aiMessage || "Error connecting to AI." }]);
       }
     } catch (e) {
-      setChatMessages(prev => [...prev, { role: 'ai', content: "Network error! Make sure the backend server (port 5000) and Gemini API are running." }]);
+      setChatMessages(prev => [...prev, { role: 'ai', content: "Unable to connect to AI assistant. Please check your network or try again in a few moments." }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -76,15 +76,15 @@ export default function AIAssistant() {
         setTranslationResult({
            word: translatorInput,
            meaning: "Error connecting to AI.",
-           explanation: data.aiMessage || "Make sure Gemini API key is set.",
+           explanation: data.aiMessage || "AI service is temporarily unavailable.",
            hindi: "त्रुटि (Error)"
         });
       }
     } catch (e) {
       setTranslationResult({
            word: translatorInput,
-           meaning: "Network error!",
-           explanation: "Make sure the backend server (port 5000) is running and accessible.",
+           meaning: "Connection error!",
+           explanation: "Unable to reach translation server. Please try again.",
            hindi: "सर्वर त्रुटि (Server Error)"
       });
     } finally {
