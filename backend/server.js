@@ -599,50 +599,7 @@ app.post('/api/faculty-insights', async (req, res) => {
 // ==========================================
 // 📚 ACADEMIC STUDY HUB APIs
 // ==========================================
-let studyResources = [
-  {
-    id: 1,
-    title: "Data Structures & Algorithms Handwritten Notes",
-    category: "Notes",
-    branch: "CSE",
-    semester: "Sem 3",
-    subject: "Data Structures",
-    unit: "Unit 1-4",
-    author: "Dr. Arvind Gupta",
-    authorRole: "faculty",
-    downloadCount: 142,
-    fileUrl: "#",
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 2,
-    title: "Operating Systems 2025 Model Question Bank",
-    category: "Question Banks",
-    branch: "IT",
-    semester: "Sem 4",
-    subject: "Operating Systems",
-    unit: "Unit 1-6",
-    author: "Prof. Sunita R.",
-    authorRole: "faculty",
-    downloadCount: 89,
-    fileUrl: "#",
-    createdAt: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: 3,
-    title: "Fluid Mechanics Previous Year Solved Papers",
-    category: "Previous Year Papers",
-    branch: "CIVIL",
-    semester: "Sem 4",
-    subject: "Fluid Mechanics",
-    unit: "Unit 1-5",
-    author: "Sanket Chute",
-    authorRole: "student",
-    downloadCount: 210,
-    fileUrl: "#",
-    createdAt: new Date(Date.now() - 172800000).toISOString()
-  }
-];
+let studyResources = [];
 
 app.get('/api/resources', (req, res) => {
   const { branch, semester, category, search } = req.query;

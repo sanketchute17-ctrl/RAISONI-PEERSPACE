@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, FileText, Download, Plus, Search, Filter, Bookmark, Trash2, Loader2, Sparkles, CheckCircle2, UserCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { db } from '../lib/firebase';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
 
@@ -26,8 +28,36 @@ export default function StudyHub({ currentUser, userProfile, role }) {
 
   const isFaculty = role === 'faculty';
 
-  const fetchResources = async () => {
+  // Real-time Firestore sync with zero dummy data
+  useEffect(() => {
     setLoading(true);
+    const q = query(collection(db, 'study_resources'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      let list = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+
+      // Apply branch, semester, category, and search filters
+      if (selectedBranch !== 'All') list = list.filter(r => r.branch === selectedBranch);
+      if (selectedSemester !== 'All') list = list.filter(r => r.semester === selectedSemester);
+      if (selectedCategory !== 'All') list = list.filter(r => r.category === selectedCategory);
+      if (searchQuery.trim()) {
+        const qStr = searchQuery.toLowerCase();
+        list = list.filter(r => (r.title && r.title.toLowerCase().includes(qStr)) || (r.subject && r.subject.toLowerCase().includes(qStr)));
+      }
+
+      setResources(list);
+      setLoading(false);
+    }, (err) => {
+      console.log("Firestore study_resources snapshot fallback:", err);
+      fetchResources();
+    });
+
+    return () => unsubscribe();
+  }, [selectedBranch, selectedSemester, selectedCategory, searchQuery]);
+
+  const fetchResources = async () => {
     try {
       let url = `${API_BASE}/api/resources?branch=${selectedBranch}&semester=${selectedSemester}&category=${selectedCategory}`;
       if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
@@ -43,10 +73,6 @@ export default function StudyHub({ currentUser, userProfile, role }) {
     }
   };
 
-  useEffect(() => {
-    fetchResources();
-  }, [selectedBranch, selectedSemester, selectedCategory, searchQuery]);
-
   const handleUploadResource = async (e) => {
     e.preventDefault();
     if (!title.trim() || !subject.trim()) {
@@ -56,30 +82,38 @@ export default function StudyHub({ currentUser, userProfile, role }) {
 
     setIsUploading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/resources`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          category,
-          branch,
-          semester,
-          subject: subject.trim(),
-          unit,
-          author: userProfile?.fullName || (isFaculty ? 'Faculty Professor' : 'Student'),
-          authorRole: isFaculty ? 'faculty' : 'student',
-          fileUrl: fileUrl || '#'
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Study Material Uploaded to Campus Hub! 📚");
-        setTitle('');
-        setSubject('');
-        setFileUrl('');
-        setIsUploadOpen(false);
-        fetchResources();
-      }
+      const resourceData = {
+        title: title.trim(),
+        category,
+        branch,
+        semester,
+        subject: subject.trim(),
+        unit,
+        author: userProfile?.fullName || (isFaculty ? 'Verified Professor' : 'Student'),
+        authorRole: isFaculty ? 'faculty' : 'student',
+        authorUid: currentUser?.uid || 'anonymous',
+        downloadCount: 0,
+        fileUrl: fileUrl || '#',
+        createdAt: serverTimestamp()
+      };
+
+      // Save directly to Firestore collection study_resources
+      await addDoc(collection(db, 'study_resources'), resourceData);
+      
+      // Notify backend server
+      try {
+        await fetch(`${API_BASE}/api/resources`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resourceData)
+        });
+      } catch (e) {}
+
+      toast.success("Study Material Uploaded & Live! 📚");
+      setTitle('');
+      setSubject('');
+      setFileUrl('');
+      setIsUploadOpen(false);
     } catch (err) {
       console.error("Error uploading resource:", err);
       toast.error("Failed to upload resource.");
@@ -91,12 +125,15 @@ export default function StudyHub({ currentUser, userProfile, role }) {
   const handleDeleteResource = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resource?")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/resources/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Resource deleted.");
-        fetchResources();
-      }
+      // Delete from Firestore
+      await deleteDoc(doc(db, 'study_resources', id));
+
+      // Notify backend server
+      try {
+        await fetch(`${API_BASE}/api/resources/${id}`, { method: 'DELETE' });
+      } catch (e) {}
+
+      toast.success("Resource deleted permanently.");
     } catch (err) {
       toast.error("Failed to delete resource.");
     }
