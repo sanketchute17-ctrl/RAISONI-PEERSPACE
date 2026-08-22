@@ -4,7 +4,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { LogOut, Home, Inbox, Archive, CheckCircle, Clock, XCircle, Search, MessageSquare, Plus, Loader2, Hash, Star, Sparkles, Printer, Paperclip, FileText, Image as ImageIcon, X, Settings, Camera, User, UserCircle, Sun, Moon, Info } from 'lucide-react';
+import { LogOut, Home, Inbox, Archive, CheckCircle, Clock, XCircle, Search, MessageSquare, Plus, Loader2, Hash, Star, Sparkles, Printer, Paperclip, FileText, Image as ImageIcon, X, Settings, Camera, User, UserCircle, Sun, Moon, Info, Eye } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import DoubtCard from '../components/DoubtCard';
 import { useAuth } from '../context/AuthContext';
@@ -41,6 +41,28 @@ export default function FacultyDashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [profileTab, setProfileTab] = useState('general');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // 3-Mode Theme State: 'light' (Day Mode), 'eyecare' (Eye Care Sepia Mode), 'dark' (Night Mode)
+  const [themeMode, setThemeMode] = useState(() => {
+    return localStorage.getItem('peerspace_theme_mode') || 'light';
+  });
+
+  const applyThemeMode = (mode) => {
+    setThemeMode(mode);
+    localStorage.setItem('peerspace_theme_mode', mode);
+
+    const root = document.documentElement;
+    root.classList.remove('dark', 'eyecare');
+    if (mode === 'dark') {
+      root.classList.add('dark');
+    } else if (mode === 'eyecare') {
+      root.classList.add('eyecare');
+    }
+  };
+
+  useEffect(() => {
+    applyThemeMode(themeMode);
+  }, []);
 
   useEffect(() => {
     setReplyText('');
@@ -382,10 +404,38 @@ export default function FacultyDashboard() {
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-             <div className="relative">
+          <div className="flex items-center gap-3 sm:gap-4">
+             {/* 3-Option Theme Mode Switcher */}
+             <div className="flex items-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-0.5 shadow-inner">
+                <button 
+                   onClick={() => applyThemeMode('light')}
+                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'light' ? 'bg-amber-400 text-slate-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
+                   title="Day Mode (Light)"
+                >
+                   <Sun className="w-3.5 h-3.5" />
+                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Day</span>
+                </button>
+                <button 
+                   onClick={() => applyThemeMode('eyecare')}
+                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
+                   title="Eye Care Mode (Soft Sepia Reading)"
+                >
+                   <Eye className="w-3.5 h-3.5" />
+                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Eye Care</span>
+                </button>
+                <button 
+                   onClick={() => applyThemeMode('dark')}
+                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'dark' ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
+                   title="Night Mode (Dark)"
+                >
+                   <Moon className="w-3.5 h-3.5" />
+                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Night</span>
+                </button>
+             </div>
+
+             <div className="relative hidden sm:block">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type="text" placeholder="Search requests..." className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none w-64 transition-all" />
+                <input type="text" placeholder="Search requests..." className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none w-48 lg:w-64 transition-all" />
              </div>
              <div 
                title="Settings & Profile"

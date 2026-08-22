@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2, Zap, Flame } from 'lucide-react';
+import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2, Zap, Flame, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DoubtCard from '../components/DoubtCard';
 import FacultyCareerConnect from '../components/FacultyCareerConnect';
@@ -477,12 +477,27 @@ export default function Dashboard() {
   const isQuest1Done = userQuestionsCount > 0;
   const isQuest2Done = userAnswersCount > 0;
 
-  // Global Dark Mode Toggle
-  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+  // 3-Mode Theme State: 'light' (Day Mode), 'eyecare' (Eye Care Sepia Mode), 'dark' (Night Mode)
+  const [themeMode, setThemeMode] = useState(() => {
+    return localStorage.getItem('peerspace_theme_mode') || 'light';
+  });
+
+  const applyThemeMode = (mode) => {
+    setThemeMode(mode);
+    localStorage.setItem('peerspace_theme_mode', mode);
+
+    const root = document.documentElement;
+    root.classList.remove('dark', 'eyecare');
+    if (mode === 'dark') {
+      root.classList.add('dark');
+    } else if (mode === 'eyecare') {
+      root.classList.add('eyecare');
+    }
   };
+
+  useEffect(() => {
+    applyThemeMode(themeMode);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#e8eff5] dark:bg-slate-900 font-sans transition-colors duration-300">
@@ -515,13 +530,42 @@ export default function Dashboard() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-4">
+            
+            {/* 3-Option Theme Mode Switcher */}
+            <div className="flex items-center bg-blue-950/80 border border-blue-800/80 rounded-full p-0.5 shadow-inner">
+               <button 
+                  onClick={() => applyThemeMode('light')}
+                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'light' ? 'bg-amber-400 text-slate-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-400 hover:text-white'}`}
+                  title="Day Mode (Light)"
+               >
+                  <Sun className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Day</span>
+               </button>
+               <button 
+                  onClick={() => applyThemeMode('eyecare')}
+                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-400 hover:text-white'}`}
+                  title="Eye Care Mode (Soft Sepia Reading)"
+               >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Eye Care</span>
+               </button>
+               <button 
+                  onClick={() => applyThemeMode('dark')}
+                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'dark' ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400' : 'text-slate-400 hover:text-white'}`}
+                  title="Night Mode (Dark)"
+               >
+                  <Moon className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Night</span>
+               </button>
+            </div>
+
             <div className="relative">
               <button 
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
-                className="text-slate-300 hover:text-white transition-colors relative outline-none"
+                className="text-slate-300 hover:text-white transition-colors relative outline-none p-1"
               >
-                <Bell className="w-6 h-6" />
+                <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
                 {notifications.length > 0 && notifications.some(n => !n.read) && (
                   <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0f172a] animate-pulse"></span>
                 )}
