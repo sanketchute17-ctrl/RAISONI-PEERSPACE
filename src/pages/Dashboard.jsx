@@ -228,47 +228,39 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (activeView === 'insights') {
-      const fetchInsights = async () => {
-        setLoadingInsights(true);
-        const defaultChartData = [
-          { name: 'Jan', questions: 2, answers: 1 },
-          { name: 'Feb', questions: 4, answers: 3 },
-          { name: 'Mar', questions: 3, answers: 5 },
-          { name: 'Apr', questions: 6, answers: 4 },
-          { name: 'May', questions: 5, answers: 8 },
-        ];
-        const defaultInsights = {
-          questionsAsked: doubts ? doubts.filter(d => d.authorId === (currentUser?.uid || 'anonymous')).length : 2,
-          upvotesReceived: 8,
-          answersGiven: 4,
-          chartData: defaultChartData,
-          aiFeedback: "Keep up the great work! Answering peer doubts helps strengthen your own concepts."
-        };
-        try {
-          const res = await fetch(`${API_BASE}/api/user-insights`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              uid: currentUser?.uid || 'anonymous', 
-              userFullName: userProfile?.fullName || 'Student',
-              doubts: doubts || []
-            })
-          });
-          const data = await res.json();
-          if (data.success && data.data && data.data.chartData && data.data.chartData.length > 0) {
-            setInsights(data.data);
-          } else {
-            setInsights(defaultInsights);
-          }
-        } catch (err) {
-          console.error("Error fetching insights:", err);
-          setInsights(defaultInsights);
+      setLoadingInsights(true);
+      const myUid = currentUser?.uid || 'anonymous';
+      const myDoubts = (doubts || []).filter(d => d.authorId === myUid);
+      const questionsAsked = myDoubts.length;
+      const upvotesReceived = myDoubts.reduce((sum, d) => sum + (d.upvotes || 0), 0);
+      
+      let answersGiven = 0;
+      (doubts || []).forEach(d => {
+        if (d.answers) {
+          const myAns = d.answers.filter(a => a.author === (userProfile?.fullName || 'Student') || a.authorId === myUid);
+          answersGiven += myAns.length;
         }
-        setLoadingInsights(false);
+      });
+
+      const months = ["Jan", "Feb", "Mar", "Apr", "May"];
+      const chartData = months.map((m, i) => ({
+        name: m,
+        questions: Math.max(1, Math.floor((questionsAsked * (i + 1)) / 5) || (i + 1)),
+        answers: Math.max(1, Math.floor((answersGiven * (i + 1)) / 5) || i)
+      }));
+
+      const computedInsights = {
+        questionsAsked,
+        upvotesReceived,
+        answersGiven,
+        chartData,
+        aiFeedback: `Great progress ${userProfile?.fullName || 'Student'}! You have asked ${questionsAsked} doubts and contributed ${answersGiven} verified answers to your peers.`
       };
-      fetchInsights();
+
+      setInsights(computedInsights);
+      setLoadingInsights(false);
     }
-  }, [activeView, currentUser, userProfile, doubts]);
+  }, [activeView]);
 
   useEffect(() => {
     if (userProfile) {
@@ -822,15 +814,47 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Scrollable Nav Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 hidescrollbar">
+        {/* Scrollable Nav Pills for Mobile */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
           <button
             onClick={() => setActiveView('doubts')}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
               activeView === 'doubts' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
             }`}
           >
-            <Hash className="w-3.5 h-3.5" /> Doubts
+            <Hash className="w-3.5 h-3.5 text-blue-400" /> Doubts
+          </button>
+          <button
+            onClick={() => setActiveView('study_hub')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'study_hub' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-indigo-400" /> Study Hub
+          </button>
+          <button
+            onClick={() => setActiveView('peer_groups')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'peer_groups' ? 'bg-purple-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <User className="w-3.5 h-3.5 text-purple-400" /> Peer Groups
+          </button>
+          <button
+            onClick={() => setActiveView('ai_study')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'ai_study' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> AI Assistant
+          </button>
+          <button
+            onClick={() => setActiveView('campus_knowledge')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'campus_knowledge' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Search className="w-3.5 h-3.5 text-cyan-400" /> Knowledge
           </button>
           <button
             onClick={() => setActiveView('mentorship')}
@@ -838,7 +862,15 @@ export default function Dashboard() {
               activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
             }`}
           >
-            <ShieldQuestion className="w-3.5 h-3.5" /> Mentorship
+            <ShieldQuestion className="w-3.5 h-3.5 text-blue-400" /> Mentorship
+          </button>
+          <button
+            onClick={() => setActiveView('leaderboard')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'leaderboard' ? 'bg-amber-500 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 text-amber-400" /> Leaderboard
           </button>
           <button
             onClick={() => setActiveView('insights')}
@@ -846,7 +878,23 @@ export default function Dashboard() {
               activeView === 'insights' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
             }`}
           >
-            <BarChart2 className="w-3.5 h-3.5" /> Insights
+            <BarChart2 className="w-3.5 h-3.5 text-blue-400" /> Insights
+          </button>
+          <button
+            onClick={() => setActiveView('bookmarks')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'bookmarks' ? 'bg-amber-500 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Bookmark className="w-3.5 h-3.5 text-amber-400" /> Saved
+          </button>
+          <button
+            onClick={() => setActiveView('notifications')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+              activeView === 'notifications' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5 text-blue-400" /> Notifications
           </button>
           <button
             onClick={() => setActiveView('history')}
@@ -854,21 +902,13 @@ export default function Dashboard() {
               activeView === 'history' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
             }`}
           >
-            <History className="w-3.5 h-3.5" /> History
-          </button>
-          <button
-            onClick={() => setActiveView('bookmarks')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
-              activeView === 'bookmarks' ? 'bg-yellow-500 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
-            }`}
-          >
-            <Bookmark className="w-3.5 h-3.5" /> Saved
+            <History className="w-3.5 h-3.5 text-blue-400" /> History
           </button>
           <button
             onClick={() => setIsAboutOpen(true)}
             className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-blue-950 text-slate-300 border border-blue-900"
           >
-            <Info className="w-3.5 h-3.5" /> About
+            <Info className="w-3.5 h-3.5 text-indigo-400" /> About
           </button>
         </div>
       </div>
