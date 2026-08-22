@@ -28,15 +28,30 @@ export default function StudyHub({ currentUser, userProfile, role }) {
 
   const isFaculty = role === 'faculty';
 
-  // Real-time Firestore sync with zero dummy data
+  // 100% Real-time Firestore sync across all student & faculty devices
   useEffect(() => {
     setLoading(true);
-    const q = query(collection(db, 'study_resources'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let list = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+    const colRef = collection(db, 'study_resources');
+    const unsubscribe = onSnapshot(colRef, (snapshot) => {
+      let list = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        let sortTime = Date.now();
+        if (data.createdAt && data.createdAt.toDate) {
+          sortTime = data.createdAt.toDate().getTime();
+        } else if (typeof data.createdAt === 'string') {
+          sortTime = new Date(data.createdAt).getTime();
+        } else if (typeof data.createdAt === 'number') {
+          sortTime = data.createdAt;
+        }
+        return {
+          id: docSnap.id,
+          ...data,
+          _sortTime: sortTime
+        };
+      });
+
+      // Sort descending by creation timestamp
+      list.sort((a, b) => b._sortTime - a._sortTime);
 
       // Apply branch, semester, category, and search filters
       if (selectedBranch !== 'All') list = list.filter(r => r.branch === selectedBranch);
@@ -50,7 +65,7 @@ export default function StudyHub({ currentUser, userProfile, role }) {
       setResources(list);
       setLoading(false);
     }, (err) => {
-      console.log("Firestore study_resources snapshot fallback:", err);
+      console.error("Firestore study_resources listener error:", err);
       fetchResources();
     });
 
@@ -88,19 +103,19 @@ export default function StudyHub({ currentUser, userProfile, role }) {
         branch,
         semester,
         subject: subject.trim(),
-        unit,
+        unit: unit || 'All Units',
         author: userProfile?.fullName || (isFaculty ? 'Verified Professor' : 'Student'),
         authorRole: isFaculty ? 'faculty' : 'student',
         authorUid: currentUser?.uid || 'anonymous',
         downloadCount: 0,
         fileUrl: fileUrl || '#',
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       };
 
-      // Save directly to Firestore collection study_resources
+      // Save directly to Firestore collection study_resources for instant cross-device broadcast
       await addDoc(collection(db, 'study_resources'), resourceData);
       
-      // Notify backend server
+      // Also sync to backend API if available
       try {
         await fetch(`${API_BASE}/api/resources`, {
           method: 'POST',
@@ -109,14 +124,14 @@ export default function StudyHub({ currentUser, userProfile, role }) {
         });
       } catch (e) {}
 
-      toast.success("Study Material Uploaded & Live! 📚");
+      toast.success("Study Material Uploaded & Live to all students! 📚");
       setTitle('');
       setSubject('');
       setFileUrl('');
       setIsUploadOpen(false);
     } catch (err) {
       console.error("Error uploading resource:", err);
-      toast.error("Failed to upload resource.");
+      toast.error("Failed to upload resource: " + err.message);
     } finally {
       setIsUploading(false);
     }
