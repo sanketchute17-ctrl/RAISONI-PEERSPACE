@@ -37,9 +37,18 @@ export default function Dashboard() {
   const [newProfilePicUrl, setNewProfilePicUrl] = useState('');
   const [newAbout, setNewAbout] = useState('');
 
-  // Notifications State
+  // Notifications & Bookmarks State
   const [notifications, setNotifications] = useState([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [localSavedDoubts, setLocalSavedDoubts] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('saved_doubts') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
+  const [insights, setInsights] = useState(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
 
   // Real-time Campus Live Announcements State
   const [announcements, setAnnouncements] = useState([]);
