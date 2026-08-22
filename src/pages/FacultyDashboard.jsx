@@ -400,13 +400,13 @@ export default function FacultyDashboard() {
       </aside>
 
       {/* Main Content Workspace */}
-      <main className="ml-0 md:ml-64 flex-1 flex flex-col max-h-screen">
+      <main className="ml-0 md:ml-64 flex-1 flex flex-col min-h-screen pb-20 md:pb-0 overflow-x-hidden">
         
         {/* Top Header */}
-        <header className="h-16 sm:h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-10 shadow-sm print:hidden">
-          <div className="md:hidden flex items-center gap-2 font-black text-sm text-slate-800 dark:text-slate-100">
-            <img src="/college-logo.png" alt="Raisoni Logo" className="h-8 w-auto object-contain bg-[#0f172a] rounded p-1" />
-            <span>Faculty Portal</span>
+        <header className="h-16 sm:h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20 shadow-sm print:hidden">
+          <div className="md:hidden flex items-center gap-2 font-black text-sm text-slate-800 dark:text-slate-100 shrink-0">
+            <img src="/college-logo.png" alt="Raisoni Logo" className="h-7 sm:h-8 w-auto object-contain bg-[#0f172a] rounded p-1" />
+            <span className="text-xs sm:text-sm">Faculty Portal</span>
           </div>
           <div className="hidden md:flex flex-col">
             <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Welcome, {userProfile?.fullName || 'Professor'}</h2>
@@ -415,20 +415,20 @@ export default function FacultyDashboard() {
             </p>
           </div>
           
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
              {/* Single Unified 3-Mode Theme Toggle Button */}
              <button 
                 onClick={cycleThemeMode}
-                className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md border active:scale-95 ${
+                className={`px-2.5 py-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold transition-all flex items-center gap-1 shadow-sm border active:scale-95 ${
                    themeMode === 'light' ? 'bg-amber-400 text-slate-950 border-amber-300 ring-2 ring-amber-300/40' :
                    themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 border-amber-300 ring-2 ring-amber-300/40' :
                    'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/40'
                 }`}
                 title="Click to cycle theme: Day -> Eye Care -> Night"
              >
-                {themeMode === 'light' && <><Sun className="w-3.5 h-3.5" /> <span>Day</span></>}
-                {themeMode === 'eyecare' && <><Eye className="w-3.5 h-3.5" /> <span>Eye Care</span></>}
-                {themeMode === 'dark' && <><Moon className="w-3.5 h-3.5" /> <span>Night</span></>}
+                {themeMode === 'light' && <><Sun className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Day</span></>}
+                {themeMode === 'eyecare' && <><Eye className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Eye Care</span></>}
+                {themeMode === 'dark' && <><Moon className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Night</span></>}
              </button>
 
              <div className="relative hidden sm:block">
@@ -438,7 +438,7 @@ export default function FacultyDashboard() {
              <div 
                title="Settings & Profile"
                onClick={() => setIsSettingsOpen(true)}
-               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-200 cursor-pointer overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all shrink-0"
+               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-200 cursor-pointer overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all shrink-0"
              >
                {userProfile?.profilePicUrl ? (
                   <img src={userProfile.profilePicUrl} alt="faculty" className="w-full h-full object-cover" />
@@ -446,6 +446,13 @@ export default function FacultyDashboard() {
                   userProfile?.fullName ? userProfile.fullName.charAt(0).toUpperCase() : 'P'
                )}
              </div>
+             <button 
+               onClick={handleLogout} 
+               className="md:hidden p-1.5 rounded-full bg-red-50 dark:bg-red-950/30 text-red-500 hover:bg-red-100 transition-colors"
+               title="Logout"
+             >
+               <LogOut className="w-4 h-4" />
+             </button>
           </div>
         </header>
 
@@ -1091,6 +1098,53 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
+
+      {/* Mobile Fixed Bottom Navigation Bar (< 768px) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a] text-white border-t border-slate-800 px-2 py-2 flex justify-around items-center shadow-2xl">
+        <button
+          onClick={() => { setActiveView('mentorship'); setActiveTab('Pending Advice'); setSelectedRequest(null); }}
+          className={`flex flex-col items-center gap-1 p-1.5 rounded-xl transition-all ${
+            activeView === 'mentorship' ? 'text-indigo-400 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <Inbox className="w-5 h-5" />
+          <span className="text-[10px]">Mentorship</span>
+        </button>
+        <button
+          onClick={() => { setActiveView('campus_doubts'); setSelectedRequest(null); }}
+          className={`flex flex-col items-center gap-1 p-1.5 rounded-xl transition-all ${
+            activeView === 'campus_doubts' ? 'text-indigo-400 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <MessageSquare className="w-5 h-5" />
+          <span className="text-[10px]">Doubts</span>
+        </button>
+        <button
+          onClick={() => { setActiveView('study_resources'); setSelectedRequest(null); }}
+          className={`flex flex-col items-center gap-1 p-1.5 rounded-xl transition-all ${
+            activeView === 'study_resources' ? 'text-indigo-400 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-[10px]">Notes</span>
+        </button>
+        <button
+          onClick={() => { setActiveView('insights'); setSelectedRequest(null); }}
+          className={`flex flex-col items-center gap-1 p-1.5 rounded-xl transition-all ${
+            activeView === 'insights' ? 'text-indigo-400 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <Star className="w-5 h-5" />
+          <span className="text-[10px]">Insights</span>
+        </button>
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-400 transition-all"
+        >
+          <UserCircle className="w-5 h-5" />
+          <span className="text-[10px]">Profile</span>
+        </button>
+      </nav>
 
     </div>
   );

@@ -329,7 +329,7 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
   };
 
   return (
-    <div className="bg-white border border-blue-100 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] hover:shadow-md transition-shadow mb-5 flex gap-4 w-full dark:bg-slate-800 dark:border-slate-700 transition-colors">
+    <div className="bg-white border border-blue-100 p-3.5 sm:p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] hover:shadow-md transition-shadow mb-4 sm:mb-5 flex gap-2.5 sm:gap-4 w-full max-w-full overflow-hidden dark:bg-slate-800 dark:border-slate-700 transition-colors">
       {/* Action Column */}
       <div className="flex flex-col items-center gap-3">
         <div className="flex flex-col items-center gap-1">
