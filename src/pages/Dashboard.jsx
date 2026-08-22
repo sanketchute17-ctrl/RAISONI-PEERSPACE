@@ -1045,7 +1045,7 @@ export default function Dashboard() {
                     <div>
                        <div className="flex items-center gap-2 mb-1.5">
                           <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-sm flex items-center gap-1">
-                             <Flame className="w-3 h-3 fill-white" /> {realStreakDays} Day Streak
+                             <Flame className="w-3 h-3 fill-white" /> {userStreak} Day Streak
                           </span>
                           <span className="bg-purple-900/60 text-purple-200 border border-purple-700/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                              {userRankName} Tier
