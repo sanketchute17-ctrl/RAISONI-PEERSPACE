@@ -53,8 +53,6 @@ export default function Login() {
     return () => clearInterval(timer);
   }, []);
 
-  const { loginAsGuest } = useAuth();
-
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!emailOrReg || !password) return;
@@ -125,14 +123,6 @@ export default function Login() {
         setIsLogin(true);
       }
     } catch (err) {
-      // If Firebase API key is invalid or unconfigured, log in using demo mode so user isn't blocked
-      const isApiKeyError = err.code?.includes('api-key') || err.message?.includes('api-key') || err.message?.includes('API key');
-      if (isApiKeyError) {
-        console.warn("Firebase API key not configured/invalid. Logging in using Demo Mode.");
-        loginAsGuest(role);
-        navigate(role === 'faculty' ? '/faculty-dashboard' : '/dashboard');
-        return;
-      }
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -373,7 +363,9 @@ export default function Login() {
           <div className="mt-3 sm:mt-6 w-full space-y-3 sm:space-y-5">
              <div className="relative flex py-0.5 sm:py-1 items-center">
                 <div className="flex-grow border-t border-white/10"></div>
-                <span className="flex-shrink-0 mx-3 sm:mx-4 text-white/30 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]">Alternatively</span>
+                <span className="flex-shrink-0 mx-3 sm:mx-4 text-white/30 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]">
+                  {isLogin ? 'New to PeerSpace?' : 'Already have an account?'}
+                </span>
                 <div className="flex-grow border-t border-white/10"></div>
              </div>
 
@@ -393,16 +385,6 @@ export default function Login() {
                 )}
               </button>
 
-              <button 
-                type="button"
-                onClick={() => {
-                  loginAsGuest(role);
-                  navigate(role === 'faculty' ? '/faculty-dashboard' : '/dashboard');
-                }} 
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500/20 to-purple-600/20 hover:from-orange-500/30 hover:to-purple-600/30 border border-orange-500/40 text-orange-200 py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl font-bold transition-all text-xs sm:text-sm shadow-md hover:scale-[1.01]"
-              >
-                <Ghost className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400" /> Continue in Guest / Demo Mode
-              </button>
             </div>
           </div>
 

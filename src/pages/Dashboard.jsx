@@ -935,10 +935,10 @@ export default function Dashboard() {
       </div>
 
       {/* Main 3-Column Layout */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 items-start">
+      <main className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 flex gap-4 lg:gap-6 xl:gap-8 items-start">
         
         {/* LEFT SIDEBAR: Navigation & Categorization */}
-        <aside className="hidden md:block w-64 shrink-0 top-24 sticky space-y-6">
+        <aside className="hidden md:block w-56 lg:w-60 xl:w-64 shrink-0 top-24 sticky space-y-6">
           
           {/* Global Student Navigation */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700 space-y-4">
@@ -1202,6 +1202,57 @@ export default function Dashboard() {
                  </div>
               </div>
 
+              {/* Mobile-Only Top Contributors & Trending Topics Card (Visible on mobile portrait < 900px) */}
+              <div className="min-[900px]:hidden mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 {/* Top Contributors Card */}
+                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700">
+                    <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-2.5 flex items-center gap-2 text-xs uppercase tracking-wider">
+                      <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
+                    </h3>
+                    {leaderboard.length === 0 ? (
+                       <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
+                    ) : (
+                       <div className="space-y-2">
+                          {leaderboard.map((user, index) => (
+                             <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
+                                <div className="flex items-center gap-2 min-w-0">
+                                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
+                                      {index + 1}
+                                   </span>
+                                   <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
+                                </div>
+                                <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
+                                   {user.points} XP
+                                </span>
+                             </div>
+                          ))}
+                       </div>
+                    )}
+                 </div>
+
+                 {/* Trending Topics Card */}
+                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700">
+                    <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-2.5 flex items-center gap-2 text-xs uppercase tracking-wider">
+                      <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
+                    </h3>
+                    <div className="flex flex-wrap gap-1.5">
+                       {topTrending.length === 0 ? (
+                          <span className="text-xs text-slate-400">#GENERAL</span>
+                       ) : (
+                          topTrending.map((tag, idx) => (
+                             <button 
+                                key={idx}
+                                onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
+                                className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
+                             >
+                                #{tag}
+                             </button>
+                          ))
+                       )}
+                    </div>
+                 </div>
+              </div>
+
               {/* Subject Quick Filter Pills Row */}
               <div className="mb-6">
                  <div className="flex items-center justify-between mb-2">
@@ -1428,7 +1479,7 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT SIDEBAR: Reputation & Top Contributors */}
-        <aside className="hidden xl:block w-80 shrink-0 top-24 sticky space-y-6">
+        <aside className="hidden min-[900px]:block w-64 lg:w-72 xl:w-80 shrink-0 top-24 sticky space-y-6">
           {/* Top Campus Contributors Leaderboard Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
              <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">

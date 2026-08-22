@@ -8,7 +8,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { Loader2 } from 'lucide-react'
 
 function ProtectedRoute({ children, requiredRole }) {
-  const { currentUser, isAnonymous, role, loading } = useAuth();
+  const { currentUser, role, loading } = useAuth();
 
   if (loading) {
     return (
@@ -19,7 +19,7 @@ function ProtectedRoute({ children, requiredRole }) {
     );
   }
 
-  if (!currentUser && !isAnonymous) {
+  if (!currentUser) {
     return <Navigate to="/" replace />;
   }
 
