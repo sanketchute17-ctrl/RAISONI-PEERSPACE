@@ -52,6 +52,7 @@ export default function Dashboard() {
 
   // Real-time Campus Live Announcements State
   const [announcements, setAnnouncements] = useState([]);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
@@ -652,7 +653,7 @@ export default function Dashboard() {
           {/* Logo & College Branding (Always visible on mobile & desktop) */}
           <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
             <img src="/college-logo.png" alt="Raisoni Logo" className="h-9 sm:h-11 w-auto object-contain bg-white/10 rounded px-1.5" />
-            <span className="font-black text-sm sm:text-base text-white tracking-tight">PeerSpace</span>
+            <span className="hidden sm:inline font-black text-sm sm:text-base text-white tracking-tight">PeerSpace</span>
           </div>
 
           {/* Search Bar */}
@@ -917,9 +918,13 @@ export default function Dashboard() {
              ) : (
                 announcements.map((item, idx) => (
                    <React.Fragment key={item.id || idx}>
-                      <span className="flex items-center gap-1.5">
+                      <span 
+                         onClick={() => setSelectedAnnouncement(item)}
+                         className="flex items-center gap-1.5 cursor-pointer hover:bg-blue-900/60 px-2 py-0.5 rounded-lg transition-colors group"
+                         title="Tap to read full announcement"
+                      >
                          <span className="bg-blue-800/80 text-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-600/50">{item.category}</span>
-                         <strong className="text-white">{item.title}:</strong> {item.text}
+                         <strong className="text-white group-hover:underline">{item.title}:</strong> <span className="line-clamp-1">{item.text}</span>
                          <span className="text-slate-400 text-[10px]">({item.author})</span>
                       </span>
                       {idx < announcements.length - 1 && <span className="text-slate-600">•</span>}
@@ -2104,13 +2109,45 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Campus Live Notice Detail Popup Modal */}
+      {selectedAnnouncement && (
+         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-[#0f172a]/75 backdrop-blur-md animate-in fade-in">
+           <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+             <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 p-5 text-white flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <span className="bg-cyan-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                   {selectedAnnouncement.category || 'Notice'}
+                 </span>
+                 <h3 className="font-extrabold text-sm sm:text-base text-white">Campus Live Notice</h3>
+               </div>
+               <button 
+                 onClick={() => setSelectedAnnouncement(null)} 
+                 className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+               >
+                 <X className="w-5 h-5" />
+               </button>
+             </div>
+             <div className="p-6 space-y-4">
+               <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">{selectedAnnouncement.title}</h2>
+               <div className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
+                 {selectedAnnouncement.text}
+               </div>
+               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800 pt-3">
+                 <span>By: <strong>{selectedAnnouncement.author || 'Raisoni Admin'}</strong></span>
+                 <span className="text-cyan-600 dark:text-cyan-400 font-bold">Official Announcement</span>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
       {/* Mobile Floating Action Bottom Nav Bar (Matches User UI Inspiration) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
         
         {/* Feed Tab */}
         <button 
-           onClick={() => setActiveView('doubts')}
-           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'doubts' ? 'text-cyan-500 scale-105' : 'text-slate-400 dark:text-slate-500'}`}
+           onClick={() => { setActiveView('doubts'); setSelectedTopicFilter(null); setSearchQuery(''); }}
+           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'doubts' && !selectedTopicFilter ? 'text-cyan-500 scale-105 font-bold' : 'text-slate-400 dark:text-slate-500'}`}
         >
            <Hash className="w-5 h-5" />
            <span className="text-[10px] font-bold uppercase tracking-wider">Feed</span>
@@ -2118,34 +2155,35 @@ export default function Dashboard() {
 
         {/* Trending Tab */}
         <button 
-           onClick={() => { setActiveView('doubts'); if(topTrending.length > 0) setSelectedTopicFilter(topTrending[0]); }}
-           className={`flex flex-col items-center gap-1 transition-all ${selectedTopicFilter ? 'text-amber-500 scale-105' : 'text-slate-400 dark:text-slate-500'}`}
+           onClick={() => { setActiveView('doubts'); if(topTrending.length > 0) { setSelectedTopicFilter(topTrending[0]); setSearchQuery(topTrending[0]); } }}
+           className={`flex flex-col items-center gap-1 transition-all ${selectedTopicFilter ? 'text-amber-500 scale-105 font-bold' : 'text-slate-400 dark:text-slate-500'}`}
         >
-           <Flame className="w-5 h-5" />
+           <Flame className="w-5 h-5 text-amber-500" />
            <span className="text-[10px] font-bold uppercase tracking-wider">Trending</span>
         </button>
 
-        {/* Center Glowing Action Button: (+) ASK / ANNOUNCE */}
+        {/* Center Fixed Action Button: (+) ASK SYLLABUS DOUBT (Fixed position, non-bouncing) */}
         <div className="relative -top-5">
            <button 
               onClick={() => setIsModalOpen(true)}
-              className="w-14 h-14 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-white rounded-2xl shadow-[0_8px_25px_rgba(6,182,212,0.5)] flex flex-col items-center justify-center border-4 border-white dark:border-slate-900 active:scale-95 transition-all animate-bounce hover:animate-none"
-              title="Ask Doubt"
+              className="w-14 h-14 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-white rounded-2xl shadow-[0_8px_25px_rgba(6,182,212,0.5)] flex flex-col items-center justify-center border-4 border-white dark:border-slate-900 active:scale-95 transition-all"
+              title="Ask Syllabus Doubt"
            >
               <PlusCircle className="w-7 h-7" />
            </button>
         </div>
 
-        {/* AI Chat Assistant Tab */}
+        {/* AI Chat Assistant Tab (Bouncing animation) */}
         <button 
            onClick={() => {
               const aiBtn = document.getElementById('ai-assistant-toggle');
               if(aiBtn) aiBtn.click();
            }}
-           className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-purple-500 transition-all"
+           className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-purple-500 transition-all animate-bounce"
+           title="Open AI Study Assistant"
         >
            <MessageSquare className="w-5 h-5 text-purple-500" />
-           <span className="text-[10px] font-bold uppercase tracking-wider">AI Chat</span>
+           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">AI Chat</span>
         </button>
 
         {/* Profile Tab */}
