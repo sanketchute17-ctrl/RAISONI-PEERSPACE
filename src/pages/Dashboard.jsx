@@ -33,10 +33,54 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Local Bookmarks State for Anonymous Users
-  const [localSavedDoubts, setLocalSavedDoubts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('saved_doubts') || '[]'); } catch(e) { return []; }
-  });
+  // Real-time Campus Live Announcements State
+  const [announcements, setAnnouncements] = useState([]);
+  const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
+  const [announcementTitle, setAnnouncementTitle] = useState('');
+  const [announcementText, setAnnouncementText] = useState('');
+  const [announcementCategory, setAnnouncementCategory] = useState('Exam Alert');
+  const [isPostingAnnouncement, setIsPostingAnnouncement] = useState(false);
+
+  // Real-time listener for announcements collection
+  useEffect(() => {
+    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+    const unsubscribeAnnouncements = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setAnnouncements(list);
+    }, (err) => {
+      console.log("Announcements snapshot error:", err);
+    });
+    return () => unsubscribeAnnouncements();
+  }, []);
+
+  const handlePostAnnouncement = async (e) => {
+    e.preventDefault();
+    if (!announcementTitle.trim() || !announcementText.trim()) {
+      toast.error("Please fill in both title and announcement details.");
+      return;
+    }
+
+    setIsPostingAnnouncement(true);
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        title: announcementTitle.trim(),
+        text: announcementText.trim(),
+        category: announcementCategory,
+        author: isUserAnonymous ? 'Ghost Scholar' : (userProfile?.fullName || 'Student'),
+        authorRole: isUserAnonymous ? 'student' : (userProfile?.role || 'student'),
+        createdAt: Date.now()
+      });
+      toast.success("Broadcasted to Campus Live! 📢");
+      setAnnouncementTitle('');
+      setAnnouncementText('');
+      setIsAnnouncementModalOpen(false);
+    } catch(err) {
+      console.error("Error posting announcement:", err);
+      toast.error("Failed to broadcast announcement. Try again.");
+    } finally {
+      setIsPostingAnnouncement(false);
+    }
+  };
 
   // Insights State
   const [insights, setInsights] = useState(null);
@@ -724,17 +768,38 @@ export default function Dashboard() {
       </div>
 
       {/* Live Campus Announcement Marquee Ticker */}
-      <div className="bg-gradient-to-r from-blue-950 via-[#0f172a] to-blue-950 border-b border-blue-800/80 px-4 py-2 text-xs text-slate-200 shadow-inner flex items-center gap-3 overflow-hidden">
-        <div className="flex items-center gap-1.5 shrink-0 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">
-           <Zap className="w-3 h-3 fill-white" /> Campus Live
+      <div className="bg-gradient-to-r from-blue-950 via-[#0f172a] to-blue-950 border-b border-blue-800/80 px-4 py-2 text-xs text-slate-200 shadow-inner flex items-center justify-between gap-3 overflow-hidden">
+        <div className="flex items-center gap-3 overflow-hidden flex-1">
+          <div className="flex items-center gap-1.5 shrink-0 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">
+             <Zap className="w-3 h-3 fill-white" /> Campus Live
+          </div>
+          <div className="flex items-center gap-6 overflow-x-auto hidescrollbar whitespace-nowrap text-slate-300 font-medium">
+             {announcements.length === 0 ? (
+                <span className="flex items-center gap-1.5 text-blue-200">
+                   <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> <strong className="text-white">Welcome:</strong> Be the first student or faculty to broadcast a Campus Live announcement!
+                </span>
+             ) : (
+                announcements.map((item, idx) => (
+                   <React.Fragment key={item.id || idx}>
+                      <span className="flex items-center gap-1.5">
+                         <span className="bg-blue-800/80 text-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-600/50">{item.category}</span>
+                         <strong className="text-white">{item.title}:</strong> {item.text}
+                         <span className="text-slate-400 text-[10px]">({item.author})</span>
+                      </span>
+                      {idx < announcements.length - 1 && <span className="text-slate-600">•</span>}
+                   </React.Fragment>
+                ))
+             )}
+          </div>
         </div>
-        <div className="flex items-center gap-6 overflow-x-auto hidescrollbar whitespace-nowrap text-slate-300 font-medium">
-           <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-yellow-400" /> <strong className="text-white">Exam Notice:</strong> Mid-Sem Examination timetable released for CSE & IT departments.</span>
-           <span className="text-slate-600">•</span>
-           <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-blue-400" /> <strong className="text-white">Faculty Notes:</strong> Dr. Arvind Gupta uploaded new Data Structures Question Bank.</span>
-           <span className="text-slate-600">•</span>
-           <span className="flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-orange-400" /> <strong className="text-white">PeerSpace Hackathon:</strong> Registrations live! Earn up to 500 XP.</span>
-        </div>
+
+        {/* Broadcast Action Button */}
+        <button 
+           onClick={() => setIsAnnouncementModalOpen(true)}
+           className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md transition-all flex items-center gap-1 border border-blue-400/40"
+        >
+           <PlusCircle className="w-3.5 h-3.5" /> Broadcast Live
+        </button>
       </div>
 
       {/* Main 3-Column Layout */}
@@ -1606,6 +1671,137 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Broadcast Campus Announcement Modal */}
+      {isAnnouncementModalOpen && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4 bg-[#0f172a]/75 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden zoom-in duration-200 border border-slate-200 dark:border-slate-800">
+             <div className="bg-gradient-to-r from-cyan-600 via-blue-700 to-indigo-800 p-5 text-white flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                   <Zap className="w-5 h-5 text-yellow-300" />
+                   <div>
+                      <h3 className="font-extrabold text-base">Broadcast to Campus Live</h3>
+                      <p className="text-[11px] text-blue-200">Post announcements to live scrolling ticker</p>
+                   </div>
+                </div>
+                <button onClick={() => setIsAnnouncementModalOpen(false)} className="text-white/80 hover:text-white p-1 rounded-full">
+                   <X className="w-5 h-5" />
+                </button>
+             </div>
+             <form onSubmit={handlePostAnnouncement} className="p-5 space-y-4">
+                <div>
+                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">Category</label>
+                   <select 
+                      value={announcementCategory}
+                      onChange={(e) => setAnnouncementCategory(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 outline-none"
+                   >
+                      <option value="Exam Alert">🚨 Exam Alert</option>
+                      <option value="Faculty Update">🎓 Faculty Update</option>
+                      <option value="Hackathon">🏆 Hackathon & Event</option>
+                      <option value="Club Notice">📢 Club & Campus Life</option>
+                      <option value="Study Group">📚 Study Group</option>
+                   </select>
+                </div>
+
+                <div>
+                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">Announcement Headline</label>
+                   <input 
+                      type="text" 
+                      value={announcementTitle}
+                      onChange={(e) => setAnnouncementTitle(e.target.value)}
+                      placeholder="e.g. Mid-Sem Timetable Released"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                   />
+                </div>
+
+                <div>
+                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">Announcement Details</label>
+                   <textarea 
+                      value={announcementText}
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      placeholder="Write brief announcement details for campus students & faculty..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500 resize-none h-24"
+                      required
+                   />
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                   <button 
+                      type="button"
+                      onClick={() => setIsAnnouncementModalOpen(false)}
+                      className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                   >
+                      Cancel
+                   </button>
+                   <button 
+                      type="submit"
+                      disabled={isPostingAnnouncement}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-xs shadow-md transition-all flex items-center gap-2"
+                   >
+                      {isPostingAnnouncement ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                      <span>Broadcast Live</span>
+                   </button>
+                </div>
+             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Floating Action Bottom Nav Bar (Matches User UI Inspiration) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
+        
+        {/* Feed Tab */}
+        <button 
+           onClick={() => setActiveView('doubts')}
+           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'doubts' ? 'text-cyan-500 scale-105' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+           <Hash className="w-5 h-5" />
+           <span className="text-[10px] font-bold uppercase tracking-wider">Feed</span>
+        </button>
+
+        {/* Trending Tab */}
+        <button 
+           onClick={() => { setActiveView('doubts'); if(topTrending.length > 0) setSelectedTopicFilter(topTrending[0]); }}
+           className={`flex flex-col items-center gap-1 transition-all ${selectedTopicFilter ? 'text-amber-500 scale-105' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+           <Flame className="w-5 h-5" />
+           <span className="text-[10px] font-bold uppercase tracking-wider">Trending</span>
+        </button>
+
+        {/* Center Glowing Action Button: (+) ASK / ANNOUNCE */}
+        <div className="relative -top-5">
+           <button 
+              onClick={() => setIsModalOpen(true)}
+              className="w-14 h-14 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-white rounded-2xl shadow-[0_8px_25px_rgba(6,182,212,0.5)] flex flex-col items-center justify-center border-4 border-white dark:border-slate-900 active:scale-95 transition-all animate-bounce hover:animate-none"
+              title="Ask Doubt"
+           >
+              <PlusCircle className="w-7 h-7" />
+           </button>
+        </div>
+
+        {/* AI Chat Assistant Tab */}
+        <button 
+           onClick={() => {
+              const aiBtn = document.getElementById('ai-assistant-toggle');
+              if(aiBtn) aiBtn.click();
+           }}
+           className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-purple-500 transition-all"
+        >
+           <MessageSquare className="w-5 h-5 text-purple-500" />
+           <span className="text-[10px] font-bold uppercase tracking-wider">AI Chat</span>
+        </button>
+
+        {/* Profile Tab */}
+        <button 
+           onClick={() => setIsProfileModalOpen(true)}
+           className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-blue-500 transition-all"
+        >
+           <User className="w-5 h-5" />
+           <span className="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+        </button>
+      </div>
 
       {/* Global AI Assistant & Smart Translator Tool */}
       <AIAssistant />
