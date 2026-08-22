@@ -637,19 +637,22 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    applyThemeMode(themeMode);
-  }, []);
+  const cycleThemeMode = () => {
+    if (themeMode === 'light') applyThemeMode('eyecare');
+    else if (themeMode === 'eyecare') applyThemeMode('dark');
+    else applyThemeMode('light');
+  };
 
   return (
     <div className="min-h-screen bg-[#e8eff5] dark:bg-slate-900 font-sans transition-colors duration-300">
       
       {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-[#0f172a] border-b border-blue-900 px-4 py-2 sm:px-6 lg:px-8 shadow-md">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          {/* Logo & College Branding */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <img src="/college-logo.png" alt="G H Raisoni College Logo" className="h-12 w-auto object-contain bg-white/10 rounded px-2 mix-blend-screen" />
+      <nav className="sticky top-0 z-40 bg-[#0f172a] border-b border-blue-900 px-3 py-2 sm:px-6 lg:px-8 shadow-md">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-2">
+          {/* Logo & College Branding (Always visible on mobile & desktop) */}
+          <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
+            <img src="/college-logo.png" alt="Raisoni Logo" className="h-9 sm:h-11 w-auto object-contain bg-white/10 rounded px-1.5" />
+            <span className="font-black text-sm sm:text-base text-white tracking-tight">PeerSpace</span>
           </div>
 
           {/* Search Bar */}
@@ -672,35 +675,22 @@ export default function Dashboard() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             
-            {/* 3-Option Unified Theme Mode Switcher */}
-            <div className="flex items-center bg-blue-950/80 border border-blue-800/80 rounded-full p-0.5 shadow-inner">
-               <button 
-                  onClick={() => applyThemeMode('light')}
-                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'light' ? 'bg-amber-400 text-slate-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-400 hover:text-white'}`}
-                  title="Day Mode (Light)"
-               >
-                  <Sun className="w-3.5 h-3.5" />
-                  <span className="text-[10px] uppercase tracking-wider">Day</span>
-               </button>
-               <button 
-                  onClick={() => applyThemeMode('eyecare')}
-                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-400 hover:text-white'}`}
-                  title="Eye Care Mode (Soft Sepia Reading)"
-               >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span className="text-[10px] uppercase tracking-wider">Eye Care</span>
-               </button>
-               <button 
-                  onClick={() => applyThemeMode('dark')}
-                  className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'dark' ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400' : 'text-slate-400 hover:text-white'}`}
-                  title="Night Mode (Dark)"
-               >
-                  <Moon className="w-3.5 h-3.5" />
-                  <span className="text-[10px] uppercase tracking-wider">Night</span>
-               </button>
-            </div>
+            {/* Single Unified 3-Mode Theme Toggle Button */}
+            <button 
+               onClick={cycleThemeMode}
+               className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md border active:scale-95 ${
+                  themeMode === 'light' ? 'bg-amber-400 text-slate-950 border-amber-300 ring-2 ring-amber-300/40' :
+                  themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 border-amber-300 ring-2 ring-amber-300/40' :
+                  'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/40'
+               }`}
+               title="Click to cycle theme: Day -> Eye Care -> Night"
+            >
+               {themeMode === 'light' && <><Sun className="w-3.5 h-3.5" /> <span>Day</span></>}
+               {themeMode === 'eyecare' && <><Eye className="w-3.5 h-3.5" /> <span>Eye Care</span></>}
+               {themeMode === 'dark' && <><Moon className="w-3.5 h-3.5" /> <span>Night</span></>}
+            </button>
 
             <div className="relative">
               <button 

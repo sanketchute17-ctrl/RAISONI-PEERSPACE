@@ -63,6 +63,12 @@ export default function FacultyDashboard() {
     }
   };
 
+  const cycleThemeMode = () => {
+    if (themeMode === 'light') applyThemeMode('eyecare');
+    else if (themeMode === 'eyecare') applyThemeMode('dark');
+    else applyThemeMode('light');
+  };
+
   useEffect(() => {
     applyThemeMode(themeMode);
   }, []);
@@ -404,33 +410,20 @@ export default function FacultyDashboard() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-4">
-             {/* 3-Option Theme Mode Switcher */}
-             <div className="flex items-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-0.5 shadow-inner">
-                <button 
-                   onClick={() => applyThemeMode('light')}
-                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'light' ? 'bg-amber-400 text-slate-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
-                   title="Day Mode (Light)"
-                >
-                   <Sun className="w-3.5 h-3.5" />
-                   <span className="text-[10px] uppercase tracking-wider">Day</span>
-                </button>
-                <button 
-                   onClick={() => applyThemeMode('eyecare')}
-                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 shadow-sm ring-1 ring-amber-300' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
-                   title="Eye Care Mode (Soft Sepia Reading)"
-                >
-                   <Eye className="w-3.5 h-3.5" />
-                   <span className="text-[10px] uppercase tracking-wider">Eye Care</span>
-                </button>
-                <button 
-                   onClick={() => applyThemeMode('dark')}
-                   className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${themeMode === 'dark' ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'}`}
-                   title="Night Mode (Dark)"
-                >
-                   <Moon className="w-3.5 h-3.5" />
-                   <span className="text-[10px] uppercase tracking-wider">Night</span>
-                </button>
-             </div>
+             {/* Single Unified 3-Mode Theme Toggle Button */}
+             <button 
+                onClick={cycleThemeMode}
+                className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-md border active:scale-95 ${
+                   themeMode === 'light' ? 'bg-amber-400 text-slate-950 border-amber-300 ring-2 ring-amber-300/40' :
+                   themeMode === 'eyecare' ? 'bg-amber-200 text-amber-950 border-amber-300 ring-2 ring-amber-300/40' :
+                   'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/40'
+                }`}
+                title="Click to cycle theme: Day -> Eye Care -> Night"
+             >
+                {themeMode === 'light' && <><Sun className="w-3.5 h-3.5" /> <span>Day</span></>}
+                {themeMode === 'eyecare' && <><Eye className="w-3.5 h-3.5" /> <span>Eye Care</span></>}
+                {themeMode === 'dark' && <><Moon className="w-3.5 h-3.5" /> <span>Night</span></>}
+             </button>
 
              <div className="relative hidden sm:block">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
