@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles } from 'lucide-react';
+import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import DoubtCard from '../components/DoubtCard';
 import FacultyCareerConnect from '../components/FacultyCareerConnect';
 import { auth, db, storage } from '../lib/firebase';
@@ -125,6 +126,37 @@ export default function Dashboard() {
       setNewAbout(userProfile.about || '');
     }
   }, [userProfile]);
+
+  const handleGalleryPhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file from your device gallery.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Url = event.target.result;
+      setNewProfilePicUrl(base64Url);
+      toast.success("Gallery photo loaded! Click 'Save Changes' below to update.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const avatarPresets = [
+    `https://api.dicebear.com/7.x/notionists/svg?seed=${userProfile?.fullName || 'Student1'}`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=${userProfile?.fullName || 'Robot'}`,
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.fullName || 'Scholar'}`,
+    `https://api.dicebear.com/7.x/person/svg?seed=${userProfile?.fullName || 'Peer'}`,
+    `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${userProfile?.fullName || 'Star'}`
+  ];
 
   const handleUpdateProfile = async () => {
     if (currentUser) {
@@ -474,19 +506,43 @@ export default function Dashboard() {
 
               {/* Notifications Dropdown */}
               {isNotificationsOpen && (
-                <div className="absolute top-10 right-0 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-                   <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
-                     <h3 className="font-bold text-slate-800 text-sm">Notifications</h3>
+                <div className="absolute top-12 -right-12 sm:right-0 w-[300px] sm:w-85 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                   <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex justify-between items-center">
+                     <div className="flex items-center gap-2">
+                       <Bell className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                       <h3 className="font-bold text-slate-800 dark:text-white text-sm">Notifications</h3>
+                       {notifications.filter(n => !n.read).length > 0 && (
+                          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                            {notifications.filter(n => !n.read).length} New
+                          </span>
+                       )}
+                     </div>
+                     <button 
+                       onClick={() => setIsNotificationsOpen(false)}
+                       className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full"
+                     >
+                       <X className="w-4 h-4" />
+                     </button>
                    </div>
                    <div className="max-h-80 overflow-y-auto custom-scrollbar">
                      {notifications.length === 0 ? (
-                       <div className="px-4 py-8 text-center text-slate-500 text-sm font-medium">No new notifications</div>
+                       <div className="px-4 py-10 text-center text-slate-400 dark:text-slate-500 text-xs font-medium flex flex-col items-center gap-2">
+                         <Bell className="w-8 h-8 opacity-30" />
+                         <p>No new notifications right now</p>
+                       </div>
                      ) : (
                        notifications.map(n => (
-                         <div key={n.id} className={`px-4 py-3 border-b border-slate-50 ${n.read ? 'bg-white' : 'bg-blue-50/50'} hover:bg-slate-50 transition-colors`}>
-                           <p className="text-sm font-bold text-slate-800">{n.title}</p>
-                           <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{n.message}</p>
-                           <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider">{n.timeAgo}</p>
+                         <div key={n.id} className={`px-4 py-3 border-b border-slate-100 dark:border-slate-700/60 ${n.read ? 'bg-white dark:bg-slate-800' : 'bg-blue-50/60 dark:bg-blue-950/40'} hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-start gap-3`}>
+                           <div className="w-7 h-7 bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                             <MessageSquare className="w-3.5 h-3.5" />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <div className="flex justify-between items-baseline gap-1">
+                               <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{n.title}</p>
+                               <span className="text-[10px] text-slate-400 font-bold shrink-0">{n.timeAgo || 'Just now'}</span>
+                             </div>
+                             <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{n.message}</p>
+                           </div>
                          </div>
                        ))
                      )}
@@ -1122,16 +1178,18 @@ export default function Dashboard() {
       {/* Profile Modal */}
       {isProfileModalOpen && !isUserAnonymous && userProfile && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden zoom-in duration-200">
-             <div className="bg-gradient-to-r from-[#0f172a] to-blue-900 p-6 flex flex-col items-center justify-center text-slate-50 relative">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden zoom-in duration-200 border border-slate-200 dark:border-slate-700">
+             <div className="bg-gradient-to-r from-[#0f172a] via-blue-950 to-blue-900 p-6 flex flex-col items-center justify-center text-slate-50 relative">
                <button 
                  onClick={() => setIsProfileModalOpen(false)}
                  className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors"
                >
                  <X className="w-4 h-4" />
                </button>
-               <div className="w-24 h-24 rounded-full bg-blue-950 border-4 border-slate-50 overflow-hidden shadow-lg mb-3">
-                 {userProfile.profilePicUrl ? (
+               <div className="w-24 h-24 rounded-full bg-blue-950 border-4 border-slate-50 overflow-hidden shadow-xl mb-3 relative group">
+                 {newProfilePicUrl ? (
+                    <img src={newProfilePicUrl} alt="Profile" className="w-full h-full object-cover" />
+                 ) : userProfile.profilePicUrl ? (
                     <img src={userProfile.profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
                  ) : (
                     <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${userProfile.fullName}`} alt="avatar" className="w-full h-full object-cover" />
@@ -1143,117 +1201,217 @@ export default function Dashboard() {
                <div className="flex items-center gap-2 mt-1">
                  <p className="text-blue-300 font-medium text-xs">{userProfile.regNo || userProfile.empId || 'Not provided'}</p>
                  <span className="w-1 h-1 rounded-full bg-blue-500"></span>
-                 <span className="text-[10px] bg-blue-800 border border-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-blue-200">
+                 <span className="text-[10px] bg-blue-800 border border-blue-600 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-blue-200">
                    {userRankName} ({totalUserXP} XP)
                  </span>
                </div>
-            </div>
-            
-            <div className="p-6">
-               <div className="space-y-4">
-                 <div>
-                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</label>
-                   <p className="font-medium text-[#0f172a]">
-                     {userProfile.department || userProfile.branch || 'Not provided'}
-                     {(userProfile.startYear || userProfile.endYear) ? ` (${userProfile.startYear || ''} - ${userProfile.endYear || ''})` : ''}
-                   </p>
-                 </div>
-                 <div>
-                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Date of Birth</label>
-                   <p className="font-medium text-[#0f172a]">{userProfile.dob || 'Not provided'}</p>
-                 </div>
-                 {userProfile.about && (
-                   <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">About Me</label>
-                     <p className="font-medium text-[#0f172a] whitespace-pre-wrap">{userProfile.about}</p>
-                   </div>
-                 )}
-                 <div className="pt-4 border-t border-blue-100">
-                   <label className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1 mb-2">
-                     <Camera className="w-3 h-3" /> Update Profile
-                   </label>
-                   <div className="flex flex-col gap-2">
-                     <input 
-                       type="text" 
-                       value={newProfilePicUrl}
-                       onChange={(e) => setNewProfilePicUrl(e.target.value)}
-                       placeholder="Paste image URL here..."
-                       className="w-full px-3 py-2 bg-slate-50 border border-blue-100 rounded-lg text-sm text-[#0f172a] outline-none focus:ring-2 focus:ring-blue-500"
-                     />
-                     <textarea 
-                       value={newAbout}
-                       onChange={(e) => setNewAbout(e.target.value)}
-                       placeholder="Write a short bio about yourself..."
-                       className="w-full px-3 py-2 bg-slate-50 border border-blue-100 rounded-lg text-sm text-[#0f172a] outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20"
-                     />
-                     <button 
-                       onClick={handleUpdateProfile}
-                       className="w-full bg-[#0f172a] hover:bg-blue-900 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors mt-1"
-                     >
-                       Save Changes
-                     </button>
-                   </div>
-                 </div>
-               </div>
-            </div>
+             </div>
+             
+             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department & Academic Year</label>
+                    <p className="font-semibold text-sm text-[#0f172a] dark:text-slate-100">
+                      {userProfile.department || userProfile.branch || 'Not provided'}
+                      {(userProfile.startYear || userProfile.endYear) ? ` (${userProfile.startYear || ''} - ${userProfile.endYear || ''})` : ''}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date of Birth</label>
+                    <p className="font-semibold text-sm text-[#0f172a] dark:text-slate-100">{userProfile.dob || 'Not provided'}</p>
+                  </div>
+
+                  {/* Profile Photo & Gallery Upload */}
+                  <div className="pt-4 border-t border-blue-100 dark:border-slate-700">
+                    <label className="text-xs font-extrabold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                      <Camera className="w-4 h-4" /> Change Profile Photo
+                    </label>
+
+                    {/* Direct Gallery Upload Button */}
+                    <div className="mb-3">
+                       <label className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all">
+                          <Camera className="w-4 h-4" />
+                          <span>Choose Photo from Device Gallery</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
+                       </label>
+                    </div>
+
+                    {/* Preset Avatars Selection */}
+                    <div className="mb-3">
+                      <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2">Or Select a Preset Avatar:</p>
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                        {avatarPresets.map((avatarUrl, idx) => (
+                           <div 
+                              key={idx}
+                              onClick={() => {
+                                setNewProfilePicUrl(avatarUrl);
+                                toast.success("Avatar selected!");
+                              }}
+                              className={`w-10 h-10 rounded-full border-2 cursor-pointer overflow-hidden transition-all shrink-0 hover:scale-110 ${newProfilePicUrl === avatarUrl ? 'border-blue-600 ring-2 ring-blue-400 scale-105' : 'border-slate-200'}`}
+                           >
+                              <img src={avatarUrl} alt="Avatar option" className="w-full h-full object-cover" />
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <input 
+                        type="text" 
+                        value={newProfilePicUrl}
+                        onChange={(e) => setNewProfilePicUrl(e.target.value)}
+                        placeholder="Or paste an image URL..."
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <textarea 
+                        value={newAbout}
+                        onChange={(e) => setNewAbout(e.target.value)}
+                        placeholder="Write a short bio about yourself..."
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500 resize-none h-16"
+                      />
+                      <button 
+                        onClick={handleUpdateProfile}
+                        className="w-full bg-[#0f172a] hover:bg-blue-900 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-md transition-colors mt-1"
+                      >
+                        Save Profile Changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+             </div>
           </div>
         </div>
       )}
 
       {/* About Application Modal */}
       {isAboutOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden zoom-in duration-200">
-             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Info className="w-5 h-5 text-blue-200" />
-                  About This Application
-                </h2>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-[#0f172a]/70 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden zoom-in duration-200 border border-slate-200 dark:border-slate-800 flex flex-col max-h-[88vh]">
+             {/* Modal Header */}
+             <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 p-5 sm:p-6 text-white flex items-center justify-between relative shrink-0">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20">
+                      <Sparkles className="w-5 h-5 text-yellow-300" />
+                   </div>
+                   <div>
+                      <h2 className="text-lg sm:text-xl font-black text-white leading-tight">About Raisoni PeerSpace</h2>
+                      <p className="text-xs text-blue-200 font-medium">Empowering Campus Learning & Doubt Resolution</p>
+                   </div>
+                </div>
                 <button 
                   onClick={() => setIsAboutOpen(false)}
-                  className="text-blue-200 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors"
+                  className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
              </div>
-             <div className="p-8">
-               <div className="flex flex-col items-center mb-6">
-                 <img src="/college-logo.png" alt="Logo" className="h-16 mb-4 object-contain" />
-                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Raisoni PeerSpace</h3>
-                 <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full mt-1">Version 1.0.0</span>
-               </div>
-               
-               <p className="text-center text-sm text-slate-600 font-medium mb-8 leading-relaxed">
-                 This application helps students and faculty connect, resolve doubts, and share knowledge efficiently across the campus.
-               </p>
 
-               <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                   <span className="text-xs font-bold text-slate-400 uppercase">Developed By</span>
-                   <span className="text-sm font-bold text-slate-700">Sanket Chute</span>
-                 </div>
-                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                   <span className="text-xs font-bold text-slate-400 uppercase">Technology</span>
-                   <span className="text-sm font-bold text-slate-700">React, Node.js, Firebase</span>
-                 </div>
-                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                   <span className="text-xs font-bold text-slate-400 uppercase">Last Updated</span>
-                   <span className="text-sm font-bold text-slate-700">May 2026</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                   <span className="text-xs font-bold text-slate-400 uppercase">Contact</span>
-                   <a href="mailto:sanketchute17@gmail.com" className="text-sm font-bold text-blue-600 hover:underline">sanketchute17@gmail.com</a>
-                 </div>
-               </div>
-               
-               <div className="mt-8 text-center">
-                 <button 
-                   onClick={() => setIsAboutOpen(false)}
-                   className="px-8 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition-all text-sm"
-                 >
-                   Close
-                 </button>
-               </div>
+             {/* Modal Body */}
+             <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-6">
+                
+                {/* Branding Banner */}
+                <div className="flex flex-col items-center text-center bg-gradient-to-b from-blue-50/50 to-slate-50 dark:from-slate-800/50 dark:to-slate-800 p-5 rounded-2xl border border-blue-100 dark:border-slate-700">
+                  <img src="/college-logo.png" alt="Raisoni Logo" className="h-14 mb-3 object-contain" />
+                  <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Raisoni PeerSpace</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[11px] font-extrabold bg-blue-600 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">v1.2.0 Production</span>
+                    <span className="text-[11px] font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span> Live Campus Network
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-3 leading-relaxed max-w-md">
+                    Raisoni PeerSpace is an official student-faculty peer learning ecosystem designed for G.H. Raisoni College of Engineering, Nagpur. Ask doubts, get instant AI & faculty verified answers, access syllabus resources, and connect effortlessly.
+                  </p>
+                </div>
+
+                {/* Key Features Grid */}
+                <div>
+                   <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Key Features & Highlights</h4>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 rounded-xl flex items-start gap-2.5">
+                         <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                         <div>
+                            <p className="text-xs font-bold text-purple-950 dark:text-purple-200">AI Doubt Solver</p>
+                            <p className="text-[11px] text-purple-700/80 dark:text-purple-300">Instant AI answers for complex syllabus doubts</p>
+                         </div>
+                      </div>
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl flex items-start gap-2.5">
+                         <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                         <div>
+                            <p className="text-xs font-bold text-blue-950 dark:text-blue-200">Direct Faculty Connect</p>
+                            <p className="text-[11px] text-blue-700/80 dark:text-blue-300">Verified answers from experienced professors</p>
+                         </div>
+                      </div>
+                      <div className="p-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-start gap-2.5">
+                         <Ghost className="w-5 h-5 text-slate-600 dark:text-slate-300 shrink-0 mt-0.5" />
+                         <div>
+                            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">Ghost Protocol Mode</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">Post anonymously without revealing identity</p>
+                         </div>
+                      </div>
+                      <div className="p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-xl flex items-start gap-2.5">
+                         <Trophy className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
+                         <div>
+                            <p className="text-xs font-bold text-orange-950 dark:text-orange-200">Leaderboard & Badges</p>
+                            <p className="text-[11px] text-orange-700/80 dark:text-orange-300">Earn XP & badges by helping peer students</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Contact & Support Section */}
+                <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-5 rounded-2xl border border-blue-800/50 shadow-lg">
+                   <div className="flex items-center justify-between mb-3 border-b border-blue-800/60 pb-2.5">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
+                         <Info className="w-4 h-4 text-blue-400" /> Technical Contact & Support
+                      </h4>
+                      <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5 rounded-full font-bold">24/7 Campus Support</span>
+                   </div>
+
+                   <div className="space-y-2.5 text-xs">
+                      <div className="flex justify-between items-center">
+                         <span className="text-slate-400 font-medium">Developer & Lead Architect:</span>
+                         <span className="font-bold text-slate-100">Sanket Chute</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                         <span className="text-slate-400 font-medium">Campus Location:</span>
+                         <span className="font-bold text-slate-100">GHRCEM / GHRCE, Nagpur</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                         <span className="text-slate-400 font-medium">Official Support Email:</span>
+                         <a href="mailto:sanketchute17@gmail.com" className="font-bold text-blue-400 hover:underline">sanketchute17@gmail.com</a>
+                      </div>
+                   </div>
+
+                   <div className="mt-4 pt-3 border-t border-blue-800/60 flex items-center justify-between gap-3">
+                      <a 
+                         href="mailto:sanketchute17@gmail.com?subject=Raisoni PeerSpace Support Request"
+                         className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-3 rounded-xl text-xs text-center transition-colors shadow-md flex items-center justify-center gap-1.5"
+                      >
+                         <Send className="w-3.5 h-3.5" /> Email Support Team
+                      </a>
+                      <button 
+                         onClick={() => {
+                            navigator.clipboard.writeText("sanketchute17@gmail.com");
+                            toast.success("Support email copied to clipboard! 📋");
+                         }}
+                         className="bg-white/10 hover:bg-white/20 text-blue-200 font-bold py-2 px-3 rounded-xl text-xs transition-colors border border-white/10"
+                      >
+                         Copy Email
+                      </button>
+                   </div>
+                </div>
+
+             </div>
+
+             {/* Footer */}
+             <div className="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-end shrink-0">
+                <button 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-all text-xs shadow-sm"
+                >
+                  Close
+                </button>
              </div>
           </div>
         </div>

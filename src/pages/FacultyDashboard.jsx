@@ -63,6 +63,28 @@ export default function FacultyDashboard() {
     }
   }, [userProfile]);
 
+  const handleGalleryPhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert("Please select an image file from your device gallery.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Url = event.target.result;
+      setNewProfilePicUrl(base64Url);
+    };
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
     if (activeView === 'insights') {
       const fetchInsights = async () => {
@@ -846,9 +868,15 @@ export default function FacultyDashboard() {
                    </div>
 
                    <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" /> Profile Photo URL</label>
-                     <input type="text" value={newProfilePicUrl} onChange={e => setNewProfilePicUrl(e.target.value)} placeholder="Paste an image URL..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
-                   </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" /> Profile Photo & Gallery</label>
+                      <label className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all mb-2">
+                         <Camera className="w-4 h-4" />
+                         <span>Choose Photo from Device Gallery</span>
+                         <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
+                      </label>
+                      <input type="text" value={newProfilePicUrl} onChange={e => setNewProfilePicUrl(e.target.value)} placeholder="Or paste an image URL..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div></div>
 
                    <div>
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">About</label>
