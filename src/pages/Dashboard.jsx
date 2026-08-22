@@ -962,14 +962,6 @@ export default function Dashboard() {
                     <Search className="w-4 h-4 text-cyan-400" /> Campus Knowledge
                   </button>
                 </li>
-                <li>
-                  <button 
-                    onClick={() => setActiveView('placement_hub')}
-                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'placement_hub' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-700'}`}
-                  >
-                    <Star className="w-4 h-4 text-amber-400" /> Placement Hub
-                  </button>
-                </li>
               </ul>
             </div>
 
@@ -1056,32 +1048,6 @@ export default function Dashboard() {
               </ul>
             </div>
 
-          </div>
-
-          {/* Top Campus Contributors Leaderboard Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
-             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
-               <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
-             </h3>
-             {leaderboard.length === 0 ? (
-                <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
-             ) : (
-                <div className="space-y-2.5">
-                   {leaderboard.map((user, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
-                         <div className="flex items-center gap-2 min-w-0">
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
-                               {index + 1}
-                            </span>
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
-                         </div>
-                         <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
-                            {user.points} XP
-                         </span>
-                      </div>
-                   ))}
-                </div>
-             )}
           </div>
 
           {/* Trending Campus Topics Card */}
@@ -1478,8 +1444,34 @@ export default function Dashboard() {
 
         </div>
 
-        {/* RIGHT SIDEBAR: Reputation & Leaderboard */}
+        {/* RIGHT SIDEBAR: Reputation & Top Contributors */}
         <aside className="hidden xl:block w-80 shrink-0 top-24 sticky space-y-6">
+          {/* Top Campus Contributors Leaderboard Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
+             </h3>
+             {leaderboard.length === 0 ? (
+                <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
+             ) : (
+                <div className="space-y-2.5">
+                   {leaderboard.map((user, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
+                         <div className="flex items-center gap-2 min-w-0">
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
+                               {index + 1}
+                            </span>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
+                         </div>
+                         <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
+                            {user.points} XP
+                         </span>
+                      </div>
+                   ))}
+                </div>
+             )}
+          </div>
+
           {/* Campus Community Guidelines Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700 border-t-4 border-t-blue-600 relative overflow-hidden group">
              <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform"><ShieldQuestion className="w-28 h-28 text-blue-600" /></div>

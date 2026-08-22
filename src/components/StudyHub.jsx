@@ -330,8 +330,39 @@ export default function StudyHub({ currentUser, userProfile, role }) {
                   </div>
 
                   <div>
-                     <label className="font-bold text-slate-500 uppercase tracking-wider mb-1 block">File Attachment / Drive Link</label>
-                     <input type="text" value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://drive.google.com/..." className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl font-semibold" />
+                     <label className="font-bold text-slate-500 uppercase tracking-wider mb-1 block">Upload PDF / Document File</label>
+                     <div className="flex flex-col gap-2">
+                        <input 
+                           type="file" 
+                           accept=".pdf,image/*,.doc,.docx"
+                           onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                 if (file.size > 10 * 1024 * 1024) {
+                                    toast.error("File size must be under 10MB");
+                                    return;
+                                 }
+                                 const reader = new FileReader();
+                                 reader.onload = (evt) => {
+                                    setFileUrl(evt.target.result);
+                                    toast.success(`Attached ${file.name}!`);
+                                 };
+                                 reader.readAsDataURL(file);
+                              }
+                           }}
+                           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300"
+                        />
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] text-slate-400 font-bold uppercase">Or paste URL:</span>
+                           <input 
+                              type="text" 
+                              value={fileUrl} 
+                              onChange={(e) => setFileUrl(e.target.value)} 
+                              placeholder="https://drive.google.com/..." 
+                              className="flex-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" 
+                           />
+                        </div>
+                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">

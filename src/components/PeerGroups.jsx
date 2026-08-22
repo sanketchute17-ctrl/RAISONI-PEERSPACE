@@ -217,7 +217,22 @@ export default function PeerGroups({ currentUser, userProfile }) {
                         placeholder={`Share notes, questions or resources with ${selectedGroup.name}...`}
                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                      />
-                     <div className="flex justify-end">
+                     <div className="flex items-center justify-between">
+                        <label className="cursor-pointer text-[11px] font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400 flex items-center gap-1">
+                           📎 Attach File / PDF
+                           <input 
+                              type="file" 
+                              accept=".pdf,image/*,.doc,.docx"
+                              onChange={(e) => {
+                                 const file = e.target.files?.[0];
+                                 if (file) {
+                                    setPostText(prev => prev + `\n[Attached File: ${file.name}]`);
+                                    toast.success(`Attached ${file.name}`);
+                                 }
+                              }}
+                              className="hidden" 
+                           />
+                        </label>
                         <button 
                            type="submit"
                            disabled={isPosting || !postText.trim()}
