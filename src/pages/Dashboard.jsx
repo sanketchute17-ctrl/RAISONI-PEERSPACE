@@ -11,7 +11,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import AIAssistant from '../components/AIAssistant';
 import CampusKnowledge from '../components/CampusKnowledge';
 import StudyHub from '../components/StudyHub';
-import PeerGroups from '../components/PeerGroups';
 import AIStudyPage from '../components/AIStudyPage';
 import PlacementHub from '../components/PlacementHub';
 import GamificationView from '../components/GamificationView';
@@ -824,14 +823,6 @@ export default function Dashboard() {
             <BookOpen className="w-3.5 h-3.5 text-indigo-400" /> Study Hub
           </button>
           <button
-            onClick={() => setActiveView('peer_groups')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
-              activeView === 'peer_groups' ? 'bg-purple-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
-            }`}
-          >
-            <User className="w-3.5 h-3.5 text-purple-400" /> Peer Groups
-          </button>
-          <button
             onClick={() => setActiveView('ai_study')}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
               activeView === 'ai_study' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'bg-blue-950 text-slate-300 border border-blue-900'
@@ -980,14 +971,6 @@ export default function Dashboard() {
                     className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'study_hub' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
                   >
                     <BookOpen className="w-4 h-4 text-indigo-400" /> Study Hub
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => setActiveView('peer_groups')}
-                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'peer_groups' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-700'}`}
-                  >
-                    <User className="w-4 h-4 text-purple-400" /> Peer Groups
                   </button>
                 </li>
                 <li>
@@ -1420,10 +1403,6 @@ export default function Dashboard() {
 
           {activeView === 'study_hub' && (
             <StudyHub currentUser={currentUser} userProfile={userProfile} role="student" />
-          )}
-
-          {activeView === 'peer_groups' && (
-            <PeerGroups currentUser={currentUser} userProfile={userProfile} />
           )}
 
           {activeView === 'ai_study' && (
