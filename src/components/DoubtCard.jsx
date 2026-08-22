@@ -5,6 +5,53 @@ import { doc, updateDoc, arrayUnion, arrayRemove, increment, collection, addDoc 
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 
+export function formatTimeAgo(timestamp) {
+  if (!timestamp) return 'Just now';
+
+  let date;
+  if (typeof timestamp === 'object' && timestamp !== null) {
+    if (typeof timestamp.toDate === 'function') {
+      date = timestamp.toDate();
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    }
+  } else if (typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  } else if (typeof timestamp === 'string') {
+    const parsed = new Date(timestamp);
+    if (!isNaN(parsed.getTime())) {
+      date = parsed;
+    } else {
+      return timestamp;
+    }
+  }
+
+  if (!date || isNaN(date.getTime())) return 'Just now';
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 30) return 'Just now';
+  if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths}mo ago`;
+}
+
 export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnonymous }) {
   const currentUserId = currentUser ? currentUser.uid : "anonymous_session";
   const initialUpvoted = doubt.upvoters ? doubt.upvoters.includes(currentUserId) : false;
@@ -168,7 +215,7 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
       text: answerText || (attachment ? 'Attached file answer' : ''),
       author: authorName,
       isVerified: userProfile?.rank === 1 || false,
-      timeAgo: "Just now",
+      createdAt: Date.now(),
       attachment,
       upvotes: 0,
       downvotes: 0,
@@ -321,7 +368,7 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
             </div>
           )}
           <span className="text-slate-300">•</span>
-          <span className="text-xs font-medium text-blue-600/70">{doubt.timeAgo || "Just now"}</span>
+          <span className="text-xs font-medium text-blue-600/70">{formatTimeAgo(doubt.createdAt || doubt.timestamp || doubt.timeAgo)}</span>
         </div>
 
         {/* Title & Description */}
@@ -353,8 +400,8 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
         )}
 
         {/* Tags & Actions */}
-        <div className="flex items-center justify-between border-t border-blue-50 pt-3">
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-blue-50 pt-3 gap-3">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center">
             {doubt.tags?.map((tag, idx) => (
               <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100/50 text-[11px] font-bold px-2.5 py-1 uppercase tracking-wide rounded-md">
                 {tag}
@@ -362,31 +409,31 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             <button 
               onClick={handleDownloadPDF}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 shadow-sm"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 shadow-sm"
               title="Save as PDF Notes"
             >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">PDF</span>
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>PDF</span>
             </button>
 
             <button 
               onClick={handleAIAnswer}
               disabled={isGeneratingAI}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-bold bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 hover:from-purple-200 hover:to-indigo-200 border border-purple-200 shadow-sm disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 hover:from-purple-200 hover:to-indigo-200 border border-purple-200 shadow-sm disabled:opacity-50"
             >
-              {isGeneratingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              {isGeneratingAI ? "Thinking..." : "AI Solve"}
+              {isGeneratingAI ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600" />}
+              <span>{isGeneratingAI ? "Thinking..." : "AI Solve"}</span>
             </button>
 
             <button 
               onClick={() => setShowAnswers(!showAnswers)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-sm font-medium ${showAnswers ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600 border border-transparent'}`}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 ${showAnswers ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600 border border-slate-200'}`}
             >
-              <MessageSquare className="w-4 h-4" />
-              {answersList.length} Answers
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="whitespace-nowrap">{answersList.length} Answers</span>
             </button>
           </div>
         </div>
@@ -466,15 +513,15 @@ export default function DoubtCard({ doubt, currentUser, userProfile, isUserAnony
                       </div>
                       <div className="flex-1 text-sm min-w-0">
                         <div className="flex flex-wrap items-center justify-between mb-1 gap-2">
-                          <span className={`font-bold flex items-center gap-1.5 ${ans.isAI ? 'text-purple-700' : ans.reported ? 'text-red-700' : 'text-[#0f172a]'}`}>
-                            {ans.reported ? "Reported Answer" : ans.author}
+                          <span className={`font-bold flex items-center gap-1.5 text-xs sm:text-sm ${ans.isAI ? 'text-purple-700' : ans.reported ? 'text-red-700' : 'text-[#0f172a]'}`}>
+                            <span>{ans.reported ? "Reported Answer" : ans.author}</span>
                             {ans.isVerified && !ans.reported && (
-                                <span className="flex items-center gap-1 bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(34,197,94,0.3)]">
+                                <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(34,197,94,0.3)]">
                                    <CheckCircle2 className="w-3.5 h-3.5" /> Faculty Verified
                                 </span>
                             )}
                           </span>
-                          <span className="text-xs text-slate-400 font-medium">{ans.timeAgo}</span>
+                          <span className="text-[11px] text-slate-400 font-medium shrink-0">{formatTimeAgo(ans.createdAt || ans.timestamp || ans.id || ans.timeAgo)}</span>
                         </div>
                         
                         {ans.reported ? (
