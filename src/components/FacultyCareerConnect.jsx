@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Target, BookOpen, Briefcase, GraduationCap, Send, ShieldQuestion, CheckCircle2, UserCircle, Clock, CheckCircle, MessageSquareText, Search, FileText, Image as ImageIcon } from 'lucide-react';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, onSnapshot, query, where, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function FacultyCareerConnect() {
@@ -14,6 +14,8 @@ export default function FacultyCareerConnect() {
   const [subCategory, setSubCategory] = useState('');
   const [subject, setSubject] = useState('');
   const [facultyName, setFacultyName] = useState('');
+  const [selectedFacultyUid, setSelectedFacultyUid] = useState('');
+  const [realFacultyMembers, setRealFacultyMembers] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -43,11 +45,28 @@ export default function FacultyCareerConnect() {
   
   const facultyList = ['Dr. Arvind Gupta', 'Prof. Neha Sharma', 'Dr. Vivek Deshmukh', 'Prof. Anjali Verma'];
 
-  // Auth Listener
+  // Auth Listener & Real Registered Faculty Fetcher
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
+
+    const fetchRealFaculty = async () => {
+      try {
+        const q = query(collection(db, 'users'), where('role', '==', 'faculty'));
+        const querySnapshot = await getDocs(q);
+        const list = querySnapshot.docs.map(d => ({
+          uid: d.id,
+          name: d.data().fullName || d.data().name || 'Faculty Member',
+          department: d.data().department || 'Faculty'
+        }));
+        setRealFacultyMembers(list);
+      } catch (err) {
+        console.error("Error fetching real faculty members:", err);
+      }
+    };
+
+    fetchRealFaculty();
     return () => unsubAuth();
   }, []);
 
@@ -92,6 +111,7 @@ export default function FacultyCareerConnect() {
         category: categories.find(c => c.id === category)?.name || 'General Query',
         subCategory: subCategory || null,
         subject: subject || null,
+        facultyId: selectedFacultyUid || 'all',
         faculty: facultyName || 'Any Available Expert',
         title,
         description,
@@ -105,7 +125,7 @@ export default function FacultyCareerConnect() {
       setTimeout(() => {
         setIsSubmitted(false);
         setCategory(''); setSubCategory(''); setSubject('');
-        setFacultyName(''); setTitle(''); setDescription(''); setIsAnonymous(false);
+        setFacultyName(''); setSelectedFacultyUid(''); setTitle(''); setDescription(''); setIsAnonymous(false);
         setActiveTab('tracking'); 
       }, 2500);
     } catch (error) {
@@ -138,7 +158,7 @@ export default function FacultyCareerConnect() {
                 Expert Mentorship
               </h2>
             </div>
-            <p className="text-blue-100 text-sm font-medium">Get personalized mentorship and track your requests.</p>
+            <p className="text-blue-100 text-sm font-medium">Get personalized mentorship from real campus faculty.</p>
           </div>
         </div>
 
@@ -228,15 +248,28 @@ export default function FacultyCareerConnect() {
 
                     <div>
                       <label className="text-sm font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                        <UserCircle className="w-4 h-4 text-slate-400" /> Preferred Mentor / Faculty (Optional)
+                        <UserCircle className="w-4 h-4 text-slate-400" /> Select Registered Faculty Mentor
                       </label>
                       <select
-                        value={facultyName}
-                        onChange={(e) => setFacultyName(e.target.value)}
+                        value={selectedFacultyUid}
+                        onChange={(e) => {
+                          const uid = e.target.value;
+                          setSelectedFacultyUid(uid);
+                          const selected = realFacultyMembers.find(f => f.uid === uid);
+                          setFacultyName(selected ? selected.name : '');
+                        }}
                         className="w-full pl-3 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 font-medium"
                       >
-                        <option value="">Any available expert</option>
-                        {facultyList.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        <option value="">Any Available Faculty Expert</option>
+                        {realFacultyMembers.length === 0 ? (
+                          <option value="" disabled>No registered faculty accounts found yet</option>
+                        ) : (
+                          realFacultyMembers.map(f => (
+                            <option key={f.uid} value={f.uid}>
+                              {f.name} ({f.department})
+                            </option>
+                          ))
+                        )}
                       </select>
                     </div>
                   </div>

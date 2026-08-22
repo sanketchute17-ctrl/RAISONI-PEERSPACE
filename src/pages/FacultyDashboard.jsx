@@ -161,16 +161,25 @@ export default function FacultyDashboard() {
   }, [activeView]);
 
   useEffect(() => {
-    // Real-time listener for mentorship requests from Firebase
+    // Real-time listener for mentorship requests targeted specifically to this logged-in faculty
+    if (!currentUser) return;
     const q = query(collection(db, 'mentorshipRequests'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const reqs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        // Map old Status names if needed. In Firebase, new requests are 'Pending'
-        status: doc.data().status === 'Pending' ? 'Pending Advice' : 
-                (doc.data().status === 'Solved' ? 'Approved' : doc.data().status)
-      }));
+      const reqs = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          status: doc.data().status === 'Pending' ? 'Pending Advice' : 
+                  (doc.data().status === 'Solved' ? 'Approved' : doc.data().status)
+        }))
+        .filter(req => {
+          // Show request if it's sent to this specific faculty's UID, or unassigned/all faculty, or matches faculty name
+          const isDirectlyAssigned = req.facultyId === currentUser.uid;
+          const isUnassigned = !req.facultyId || req.facultyId === 'all';
+          const isNameMatched = req.faculty && userProfile?.fullName && req.faculty.toLowerCase().includes(userProfile.fullName.toLowerCase());
+          return isDirectlyAssigned || isUnassigned || isNameMatched;
+        });
+
       setRequests(reqs);
       
       // Update selected request if it got modified
@@ -186,7 +195,7 @@ export default function FacultyDashboard() {
     });
 
     return () => unsubscribe();
-  }, [selectedRequest]);
+  }, [currentUser, userProfile, selectedRequest]);
 
   useEffect(() => {
     // Real-time listener for campus doubts collection
