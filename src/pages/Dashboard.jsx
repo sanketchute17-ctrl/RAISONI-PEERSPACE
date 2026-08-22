@@ -937,8 +937,8 @@ export default function Dashboard() {
       {/* Main 3-Column Layout */}
       <main className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 flex gap-4 lg:gap-6 xl:gap-8 items-start">
         
-        {/* LEFT SIDEBAR: Navigation & Categorization */}
-        <aside className="hidden md:block w-56 lg:w-60 xl:w-64 shrink-0 top-24 sticky space-y-6">
+        {/* LEFT SIDEBAR: Navigation, Top Contributors & Campus Resources */}
+        <aside className="hidden md:block w-64 lg:w-72 xl:w-80 shrink-0 top-20 sticky space-y-5 max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar pr-1">
           
           {/* Global Student Navigation */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700 space-y-4">
@@ -1077,7 +1077,84 @@ export default function Dashboard() {
 
           </div>
 
+          {/* Top Campus Contributors Leaderboard Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-2.5 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
+             </h3>
+             {leaderboard.length === 0 ? (
+                <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
+             ) : (
+                <div className="space-y-2">
+                   {leaderboard.map((user, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
+                         <div className="flex items-center gap-2 min-w-0">
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
+                               {index + 1}
+                            </span>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
+                         </div>
+                         <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
+                            {user.points} XP
+                         </span>
+                      </div>
+                   ))}
+                </div>
+             )}
+          </div>
 
+          {/* Trending Campus Topics Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-2.5 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
+             </h3>
+             <div className="flex flex-wrap gap-1.5">
+                {topTrending.length === 0 ? (
+                   <span className="text-xs text-slate-400">#GENERAL</span>
+                ) : (
+                   topTrending.map((tag, idx) => (
+                      <button 
+                         key={idx}
+                         onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
+                         className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
+                      >
+                         #{tag}
+                      </button>
+                   ))
+                )}
+             </div>
+          </div>
+
+          {/* Campus Community Guidelines Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700 border-t-4 border-t-blue-600 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 p-3 opacity-[0.05] group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform"><ShieldQuestion className="w-24 h-24 text-blue-600" /></div>
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-2.5 flex items-center gap-2 text-xs uppercase tracking-wider relative z-10">
+               <ShieldQuestion className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Community Rules
+             </h3>
+             <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300 relative z-10">
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                   <span>Ask clear, syllabus-focused doubts with subject tags</span>
+                </li>
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                   <span>Earn +50 XP by providing verified answers to peers</span>
+                </li>
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></span>
+                   <span>Use Ghost Protocol for anonymous academic inquiries</span>
+                </li>
+             </ul>
+          </div>
+
+          {/* The Raisoni Promise Card */}
+          <div className="bg-gradient-to-br from-[#0f172a] to-blue-900 rounded-2xl p-4 shadow-lg border border-blue-800 text-slate-50 relative overflow-hidden">
+             <Ghost className="absolute -right-4 -bottom-4 w-28 h-28 opacity-10" />
+             <h4 className="font-black text-base mb-1.5 relative z-10">The Raisoni Promise</h4>
+             <p className="text-xs text-blue-200 block font-medium leading-relaxed relative z-10">
+               No question is too simple. Ask anonymously, learn confidently, and help others when you can!
+             </p>
+          </div>
 
           {/* Quick Academic Resources Shortcuts Card */}
           <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-4 shadow-sm border border-blue-800/60">
@@ -1477,87 +1554,6 @@ export default function Dashboard() {
           )}
 
         </div>
-
-        {/* RIGHT SIDEBAR: Reputation & Top Contributors */}
-        <aside className="hidden min-[900px]:block w-64 lg:w-72 xl:w-80 shrink-0 top-24 sticky space-y-6">
-          {/* Top Campus Contributors Leaderboard Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
-             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
-               <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
-             </h3>
-             {leaderboard.length === 0 ? (
-                <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
-             ) : (
-                <div className="space-y-2.5">
-                   {leaderboard.map((user, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
-                         <div className="flex items-center gap-2 min-w-0">
-                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
-                               {index + 1}
-                            </span>
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
-                         </div>
-                         <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
-                            {user.points} XP
-                         </span>
-                      </div>
-                   ))}
-                </div>
-             )}
-          </div>
-
-          {/* Trending Campus Topics Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
-             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
-               <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
-             </h3>
-             <div className="flex flex-wrap gap-1.5">
-                {topTrending.length === 0 ? (
-                   <span className="text-xs text-slate-400">#GENERAL</span>
-                ) : (
-                   topTrending.map((tag, idx) => (
-                      <button 
-                         key={idx}
-                         onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
-                         className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
-                      >
-                         #{tag}
-                      </button>
-                   ))
-                )}
-             </div>
-          </div>
-
-          {/* Campus Community Guidelines Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700 border-t-4 border-t-blue-600 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform"><ShieldQuestion className="w-28 h-28 text-blue-600" /></div>
-             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider relative z-10">
-               <ShieldQuestion className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Community Rules
-             </h3>
-             <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300 relative z-10">
-                <li className="flex items-start gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
-                   <span>Ask clear, syllabus-focused doubts with subject tags</span>
-                </li>
-                <li className="flex items-start gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
-                   <span>Earn +50 XP by providing verified answers to peers</span>
-                </li>
-                <li className="flex items-start gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></span>
-                   <span>Use Ghost Protocol for anonymous academic inquiries</span>
-                </li>
-             </ul>
-          </div>
-
-          <div className="bg-gradient-to-br from-[#0f172a] to-blue-900 rounded-2xl p-5 shadow-lg border border-blue-800 text-slate-50 relative overflow-hidden">
-             <Ghost className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10" />
-             <h4 className="font-black text-lg mb-2 relative z-10">The Raisoni Promise</h4>
-             <p className="text-sm text-blue-200 block font-medium leading-relaxed relative z-10">
-               No question is too simple. Ask anonymously, learn confidently, and help others when you can!
-             </p>
-          </div>
-        </aside>
       </main>
 
       {/* Ask Question Popup Modal */}
