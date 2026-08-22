@@ -4,7 +4,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { LogOut, Home, Inbox, Archive, CheckCircle, Clock, XCircle, Search, MessageSquare, Plus, Loader2, Hash, Star, Sparkles, Printer, Paperclip, FileText, Image as ImageIcon, X, Settings, Camera, User, UserCircle, Sun, Moon, Info, Eye } from 'lucide-react';
+import { LogOut, Home, Inbox, Archive, CheckCircle, Clock, XCircle, Search, MessageSquare, Plus, Loader2, Hash, Star, Sparkles, Printer, Paperclip, FileText, Image as ImageIcon, X, Settings, Camera, User, UserCircle, Sun, Moon, Info, Eye, ChevronLeft } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import DoubtCard from '../components/DoubtCard';
 import CampusKnowledge from '../components/CampusKnowledge';
@@ -570,56 +570,57 @@ export default function FacultyDashboard() {
                ) : (
                  <div className="flex flex-col h-full">
                     {/* Detail Header */}
-                    <div className="bg-white p-8 border-b border-slate-200 shrink-0 shadow-sm relative">
+                    <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 border-b border-slate-200 dark:border-slate-800 shrink-0 shadow-sm relative">
+                      {/* Prominent Mobile Back Button */}
                       <button 
                         onClick={() => setSelectedRequest(null)}
-                        className="md:hidden absolute top-4 right-4 bg-slate-100 p-2 rounded-full text-slate-600 font-bold text-xs"
+                        className="md:hidden mb-4 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs rounded-xl border border-indigo-100 dark:border-slate-700 shadow-sm active:scale-95 transition-all"
                       >
-                        Close
+                        <ChevronLeft className="w-4 h-4" /> Back to All Requests
                       </button>
 
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${selectedRequest.status === 'Pending Advice' ? 'bg-amber-50 text-amber-600 border-amber-200' : selectedRequest.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                      <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${selectedRequest.status === 'Pending Advice' ? 'bg-amber-50 text-amber-600 border-amber-200' : selectedRequest.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
                             Status: {selectedRequest.status}
                           </span>
-                          <span className="text-sm font-semibold text-slate-400">ID: #{selectedRequest.id}</span>
+                          <span className="text-xs font-semibold text-slate-400">ID: #{selectedRequest.id}</span>
                         </div>
                         <button 
                           onClick={() => window.print()}
-                          className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors print:hidden"
+                          className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors print:hidden"
                           title="Print / Save Document as PDF"
                         >
                           <Printer className="w-3.5 h-3.5" /> Save PDF
                         </button>
                       </div>
 
-                      <h2 className="text-3xl font-black text-slate-800 mb-4">{selectedRequest.title}</h2>
+                      <h2 className="text-xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 mb-4">{selectedRequest.title}</h2>
                       
-                      <div className="flex flex-wrap gap-4 text-sm font-medium text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                         <div className="flex flex-col">
                           <span className="text-[10px] uppercase font-bold text-slate-400">Category</span>
-                          <span className="capitalize">{selectedRequest.category}</span>
+                          <span className="capitalize font-bold text-slate-800 dark:text-slate-200">{selectedRequest.category}</span>
                         </div>
                         {selectedRequest.subCategory && (
                           <>
-                            <div className="w-px h-8 bg-slate-200 mx-2"></div>
+                            <div className="w-px h-6 sm:h-8 bg-slate-200 dark:bg-slate-700 mx-1 sm:mx-2"></div>
                             <div className="flex flex-col">
                               <span className="text-[10px] uppercase font-bold text-slate-400">Topic</span>
-                              <span className="capitalize">{selectedRequest.subCategory}</span>
+                              <span className="capitalize font-bold text-slate-800 dark:text-slate-200">{selectedRequest.subCategory}</span>
                             </div>
                           </>
                         )}
-                        <div className="w-px h-8 bg-slate-200 mx-2"></div>
+                        <div className="w-px h-6 sm:h-8 bg-slate-200 dark:bg-slate-700 mx-1 sm:mx-2"></div>
                         <div className="flex flex-col">
                           <span className="text-[10px] uppercase font-bold text-slate-400">Requested By</span>
-                          <span>{selectedRequest.isAnonymous ? 'Anonymous Student' : 'Student (Data Hidden for Hackathon)'}</span>
+                          <span className="font-semibold">{selectedRequest.isAnonymous ? 'Anonymous Student' : 'Student (Data Hidden)'}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Detail Body */}
-                    <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8 custom-scrollbar">
                        <div>
                          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Student's Full Request</h3>
                          <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-lg bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
