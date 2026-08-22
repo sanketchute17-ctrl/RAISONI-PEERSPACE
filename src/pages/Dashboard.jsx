@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2, Zap, Flame, Eye } from 'lucide-react';
+import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2, Zap, Flame, Eye, KeyRound, Lock, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DoubtCard from '../components/DoubtCard';
 import FacultyCareerConnect from '../components/FacultyCareerConnect';
 import { auth, db, storage } from '../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, updateDoc, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AIAssistant from '../components/AIAssistant';
@@ -82,9 +82,98 @@ export default function Dashboard() {
     }
   };
 
-  // Insights State
-  const [insights, setInsights] = useState(null);
-  const [loadingInsights, setLoadingInsights] = useState(false);
+  // Password Change State
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [activeProfileTab, setActiveProfileTab] = useState('general'); // 'general' or 'security'
+
+  // Real Persistent Streak Logic in Firestore
+  const [userStreak, setUserStreak] = useState(1);
+
+  useEffect(() => {
+    if (!currentUser || isUserAnonymous) return;
+
+    const updateUserStreakInFirebase = async () => {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userRef);
+        const todayStr = new Date().toISOString().split('T')[0]; // "2026-08-22"
+
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const lastActive = data.lastActiveDate || '';
+          let currentStreak = data.streakCount || 1;
+
+          if (lastActive !== todayStr) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (lastActive === yesterdayStr) {
+              currentStreak += 1;
+            } else {
+              currentStreak = 1;
+            }
+
+            await updateDoc(userRef, {
+              lastActiveDate: todayStr,
+              streakCount: currentStreak
+            });
+          }
+
+          setUserStreak(currentStreak);
+        }
+      } catch (err) {
+        console.error("Streak calculation error:", err);
+      }
+    };
+
+    updateUserStreakInFirebase();
+  }, [currentUser, isUserAnonymous]);
+
+  const handlePasswordChangeSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPasswordInput || newPasswordInput.length < 6) {
+      toast.error("New password must be at least 6 characters long.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      if (currentPasswordInput && currentUser?.email) {
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPasswordInput);
+        await reauthenticateWithCredential(currentUser, credential);
+      }
+      await updatePassword(currentUser, newPasswordInput);
+      toast.success("Password updated successfully! 🔑");
+      setCurrentPasswordInput('');
+      setNewPasswordInput('');
+    } catch(err) {
+      console.error("Password update error:", err);
+      if (err.code === 'auth/wrong-password') {
+        toast.error("Incorrect current password.");
+      } else {
+        toast.error("Failed to update password. Try logging in again.");
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    if (!currentUser?.email) {
+      toast.error("No email associated with this account.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, currentUser.email);
+      toast.success(`Password reset email sent to ${currentUser.email}! 📧`);
+    } catch(err) {
+      console.error("Reset email error:", err);
+      toast.error("Error sending password reset email.");
+    }
+  };
 
   // Real-time listener for doubts collection
   useEffect(() => {
@@ -1282,35 +1371,6 @@ export default function Dashboard() {
              </ul>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100 border-t-4 border-t-blue-600 group">
-            <h3 className="font-bold text-[#0f172a] mb-5 flex items-center gap-2 text-sm uppercase tracking-wider">
-              <Trophy className="w-4 h-4 text-blue-600" />
-              Top Contributors
-            </h3>
-            <div className="space-y-4">
-              {leaderboard.map((user) => (
-                <div key={user.rank} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg shadow-sm ${
-                      user.rank === 1 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-yellow-900 border border-yellow-400' : 
-                      user.rank === 2 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-800 border border-slate-300' : 
-                      'bg-gradient-to-br from-amber-600 to-amber-700 text-amber-50 border border-amber-800'
-                    }`}>
-                      {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#0f172a] leading-tight">{user.name}</p>
-                      <p className="text-xs font-semibold text-blue-600 flex items-center gap-1">
-                        <Star className="w-3 h-3 text-blue-500 fill-current" /> {user.points} XP
-                      </p>
-                    </div>
-                  </div>
-                  {user.rank === 1 && <span className="text-[10px] bg-[#0f172a] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Campus Star</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="bg-gradient-to-br from-[#0f172a] to-blue-900 rounded-2xl p-5 shadow-lg border border-blue-800 text-slate-50 relative overflow-hidden">
              <Ghost className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10" />
              <h4 className="font-black text-lg mb-2 relative z-10">The Raisoni Promise</h4>
@@ -1502,15 +1562,16 @@ export default function Dashboard() {
       {/* Profile Modal */}
       {isProfileModalOpen && !isUserAnonymous && userProfile && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden zoom-in duration-200 border border-slate-200 dark:border-slate-700">
-             <div className="bg-gradient-to-r from-[#0f172a] via-blue-950 to-blue-900 p-6 flex flex-col items-center justify-center text-slate-50 relative">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden zoom-in duration-200 border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh]">
+             {/* Header */}
+             <div className="bg-gradient-to-r from-[#0f172a] via-blue-950 to-blue-900 p-5 flex flex-col items-center justify-center text-slate-50 relative shrink-0">
                <button 
                  onClick={() => setIsProfileModalOpen(false)}
                  className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors"
                >
                  <X className="w-4 h-4" />
                </button>
-               <div className="w-24 h-24 rounded-full bg-blue-950 border-4 border-slate-50 overflow-hidden shadow-xl mb-3 relative group">
+               <div className="w-20 h-20 rounded-full bg-blue-950 border-4 border-slate-50 overflow-hidden shadow-xl mb-2 relative group">
                  {newProfilePicUrl ? (
                     <img src={newProfilePicUrl} alt="Profile" className="w-full h-full object-cover" />
                  ) : userProfile.profilePicUrl ? (
@@ -1519,89 +1580,170 @@ export default function Dashboard() {
                     <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${userProfile.fullName}`} alt="avatar" className="w-full h-full object-cover" />
                  )}
                </div>
-               <h2 className="text-xl font-bold flex items-center gap-2">
+               <h2 className="text-lg font-bold flex items-center gap-2">
                  {userProfile.fullName || 'Not provided'}
                </h2>
                <div className="flex items-center gap-2 mt-1">
-                 <p className="text-blue-300 font-medium text-xs">{userProfile.regNo || userProfile.empId || 'Not provided'}</p>
-                 <span className="w-1 h-1 rounded-full bg-blue-500"></span>
                  <span className="text-[10px] bg-blue-800 border border-blue-600 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-blue-200">
                    {userRankName} ({totalUserXP} XP)
                  </span>
+                 <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                   <Flame className="w-3 h-3 fill-amber-400" /> {userStreak} Day Streak
+                 </span>
                </div>
              </div>
+
+             {/* Tab Switcher */}
+             <div className="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 shrink-0">
+                <button 
+                   onClick={() => setActiveProfileTab('general')}
+                   className={`flex-1 py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-b-2 ${activeProfileTab === 'general' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                   <User className="w-3.5 h-3.5" /> Registration & Profile
+                </button>
+                <button 
+                   onClick={() => setActiveProfileTab('security')}
+                   className={`flex-1 py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-b-2 ${activeProfileTab === 'security' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                   <Lock className="w-3.5 h-3.5" /> Change Password
+                </button>
+             </div>
              
-             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department & Academic Year</label>
-                    <p className="font-semibold text-sm text-[#0f172a] dark:text-slate-100">
-                      {userProfile.department || userProfile.branch || 'Not provided'}
-                      {(userProfile.startYear || userProfile.endYear) ? ` (${userProfile.startYear || ''} - ${userProfile.endYear || ''})` : ''}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date of Birth</label>
-                    <p className="font-semibold text-sm text-[#0f172a] dark:text-slate-100">{userProfile.dob || 'Not provided'}</p>
-                  </div>
+             {/* Content Area */}
+             <div className="p-5 overflow-y-auto custom-scrollbar space-y-4">
+                
+                {activeProfileTab === 'general' && (
+                  <>
+                     {/* Registration Details Card */}
+                     <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 space-y-2.5 text-xs">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                           <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Registration / Student ID</span>
+                           <span className="font-extrabold text-slate-800 dark:text-slate-100">{userProfile.regNo || userProfile.studentId || userProfile.empId || 'Not provided'}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                           <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Branch / Department</span>
+                           <span className="font-extrabold text-slate-800 dark:text-slate-100">{userProfile.department || userProfile.branch || 'Not provided'}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                           <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Academic Batch</span>
+                           <span className="font-extrabold text-slate-800 dark:text-slate-100">{(userProfile.startYear || userProfile.endYear) ? `${userProfile.startYear || ''} - ${userProfile.endYear || ''}` : 'GHRCEM Nagpur'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                           <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Account Email</span>
+                           <span className="font-extrabold text-blue-600 dark:text-blue-400">{currentUser?.email || userProfile?.email || 'Not provided'}</span>
+                        </div>
+                     </div>
 
-                  {/* Profile Photo & Gallery Upload */}
-                  <div className="pt-4 border-t border-blue-100 dark:border-slate-700">
-                    <label className="text-xs font-extrabold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                      <Camera className="w-4 h-4" /> Change Profile Photo
-                    </label>
+                     {/* Profile Photo & Gallery Upload */}
+                     <div className="pt-2">
+                        <label className="text-xs font-extrabold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mb-2.5">
+                          <Camera className="w-4 h-4" /> Change Profile Photo
+                        </label>
 
-                    {/* Direct Gallery Upload Button */}
-                    <div className="mb-3">
-                       <label className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all">
-                          <Camera className="w-4 h-4" />
-                          <span>Choose Photo from Device Gallery</span>
-                          <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
-                       </label>
-                    </div>
+                        {/* Direct Gallery Upload Button */}
+                        <div className="mb-2.5">
+                           <label className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all">
+                              <Camera className="w-4 h-4" />
+                              <span>Choose Photo from Device Gallery</span>
+                              <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
+                           </label>
+                        </div>
 
-                    {/* Preset Avatars Selection */}
-                    <div className="mb-3">
-                      <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2">Or Select a Preset Avatar:</p>
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                        {avatarPresets.map((avatarUrl, idx) => (
-                           <div 
-                              key={idx}
-                              onClick={() => {
-                                setNewProfilePicUrl(avatarUrl);
-                                toast.success("Avatar selected!");
-                              }}
-                              className={`w-10 h-10 rounded-full border-2 cursor-pointer overflow-hidden transition-all shrink-0 hover:scale-110 ${newProfilePicUrl === avatarUrl ? 'border-blue-600 ring-2 ring-blue-400 scale-105' : 'border-slate-200'}`}
-                           >
-                              <img src={avatarUrl} alt="Avatar option" className="w-full h-full object-cover" />
-                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        {/* Preset Avatars Selection */}
+                        <div className="mb-2.5">
+                          <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">Or Select a Preset Avatar:</p>
+                          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                            {avatarPresets.map((avatarUrl, idx) => (
+                               <div 
+                                  key={idx}
+                                  onClick={() => {
+                                    setNewProfilePicUrl(avatarUrl);
+                                    toast.success("Avatar selected!");
+                                  }}
+                                  className={`w-9 h-9 rounded-full border-2 cursor-pointer overflow-hidden transition-all shrink-0 hover:scale-110 ${newProfilePicUrl === avatarUrl ? 'border-blue-600 ring-2 ring-blue-400 scale-105' : 'border-slate-200'}`}
+                               >
+                                  <img src={avatarUrl} alt="Avatar option" className="w-full h-full object-cover" />
+                               </div>
+                            ))}
+                          </div>
+                        </div>
 
-                    <div className="flex flex-col gap-2">
-                      <input 
-                        type="text" 
-                        value={newProfilePicUrl}
-                        onChange={(e) => setNewProfilePicUrl(e.target.value)}
-                        placeholder="Or paste an image URL..."
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <textarea 
-                        value={newAbout}
-                        onChange={(e) => setNewAbout(e.target.value)}
-                        placeholder="Write a short bio about yourself..."
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500 resize-none h-16"
-                      />
-                      <button 
-                        onClick={handleUpdateProfile}
-                        className="w-full bg-[#0f172a] hover:bg-blue-900 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-md transition-colors mt-1"
-                      >
-                        Save Profile Changes
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                        <div className="flex flex-col gap-2">
+                          <input 
+                            type="text" 
+                            value={newProfilePicUrl}
+                            onChange={(e) => setNewProfilePicUrl(e.target.value)}
+                            placeholder="Or paste image URL..."
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <textarea 
+                            value={newAbout}
+                            onChange={(e) => setNewAbout(e.target.value)}
+                            placeholder="Write a short bio about yourself..."
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-xl text-xs text-[#0f172a] dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500 resize-none h-16"
+                          />
+                          <button 
+                            onClick={handleUpdateProfile}
+                            className="w-full bg-[#0f172a] hover:bg-blue-900 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-md transition-colors mt-1"
+                          >
+                            Save Profile Changes
+                          </button>
+                        </div>
+                     </div>
+                  </>
+                )}
+
+                {activeProfileTab === 'security' && (
+                  <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+                     <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 p-3 rounded-xl flex items-center gap-2">
+                        <KeyRound className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                        <p className="text-[11px] text-blue-900 dark:text-blue-200 font-medium">Update your account password securely or request a reset link to your email.</p>
+                     </div>
+
+                     <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">Current Password</label>
+                        <input 
+                           type="password"
+                           value={currentPasswordInput}
+                           onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                           placeholder="Enter current password..."
+                           className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                     </div>
+
+                     <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">New Password</label>
+                        <input 
+                           type="password"
+                           value={newPasswordInput}
+                           onChange={(e) => setNewPasswordInput(e.target.value)}
+                           placeholder="Enter new password (min 6 chars)..."
+                           className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+                           required
+                        />
+                     </div>
+
+                     <button 
+                        type="submit"
+                        disabled={isChangingPassword}
+                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                     >
+                        {isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                        <span>Update Password Now</span>
+                     </button>
+
+                     <div className="pt-3 border-t border-slate-100 dark:border-slate-700 text-center">
+                        <button 
+                           type="button"
+                           onClick={handleSendResetEmail}
+                           className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center justify-center gap-1.5 mx-auto"
+                        >
+                           <Mail className="w-3.5 h-3.5" /> Send Password Reset Email Link
+                        </button>
+                     </div>
+                  </form>
+                )}
+
              </div>
           </div>
         </div>
