@@ -1355,19 +1355,25 @@ export default function Dashboard() {
 
         {/* RIGHT SIDEBAR: Reputation & Leaderboard */}
         <aside className="hidden xl:block w-80 shrink-0 top-24 sticky space-y-6">
-          <div className="bg-white rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] border border-pink-100 border-t-4 border-t-pink-500 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform"><Star className="w-32 h-32 text-pink-500" /></div>
-             <h3 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2 text-sm uppercase tracking-wider relative z-10">
-               🔥 Trending Topics
+          {/* Campus Community Guidelines Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700 border-t-4 border-t-blue-600 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform"><ShieldQuestion className="w-28 h-28 text-blue-600" /></div>
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider relative z-10">
+               <ShieldQuestion className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Community Rules
              </h3>
-             <ul className="space-y-2 relative z-10">
-                {topTrending.map((tag, idx) => (
-                   <li key={idx} className="flex items-center justify-between text-sm py-2 border-b border-pink-50 last:border-0 hover:bg-pink-50/50 rounded-xl px-3 transition-all cursor-pointer hover:shadow-sm" onClick={() => { setSearchQuery(tag); setActiveView('doubts'); }}>
-                      <span className="font-bold text-slate-700 flex items-center gap-2 truncate pr-2" title={tag}>#{tag}</span>
-                      <span className="text-[10px] font-black text-pink-600 bg-pink-100 px-2 py-1 rounded-full shrink-0 shadow-sm">{trendingTagsMap[tag]} doubts</span>
-                   </li>
-                ))}
-                {topTrending.length === 0 && <p className="text-sm text-slate-500">Not enough data yet.</p>}
+             <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300 relative z-10">
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                   <span>Ask clear, syllabus-focused doubts with subject tags</span>
+                </li>
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                   <span>Earn +50 XP by providing verified answers to peers</span>
+                </li>
+                <li className="flex items-start gap-2">
+                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 shrink-0"></span>
+                   <span>Use Ghost Protocol for anonymous academic inquiries</span>
+                </li>
              </ul>
           </div>
 
