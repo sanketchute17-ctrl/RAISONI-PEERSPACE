@@ -2172,53 +2172,53 @@ export default function Dashboard() {
        )}
 
       {/* Mobile Fixed Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-around shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]">
         
         {/* Doubts Feed */}
         <button 
            onClick={() => { setActiveView('doubts'); setSelectedTopicFilter(null); setSearchQuery(''); }}
-           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'doubts' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+           className={`flex flex-col items-center gap-0.5 transition-all ${activeView === 'doubts' ? 'text-blue-600 dark:text-blue-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400'}`}
         >
-           <Hash className="w-5 h-5" />
-           <span className="text-[10px] font-bold uppercase tracking-wider">Doubts</span>
+           <Hash className="w-5 h-5 text-blue-500" />
+           <span className="text-[10px] font-extrabold uppercase tracking-wider">Doubts</span>
         </button>
 
-        {/* Study Hub (Notes & PDFs) */}
+        {/* Expert Mentorship (Replaced Study Hub) */}
         <button 
-           onClick={() => { setActiveView('study_hub'); }}
-           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'study_hub' ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+           onClick={() => { setActiveView('mentorship'); }}
+           className={`flex flex-col items-center gap-0.5 transition-all ${activeView === 'mentorship' ? 'text-blue-600 dark:text-blue-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400'}`}
         >
-           <BookOpen className="w-5 h-5 text-indigo-500" />
-           <span className="text-[10px] font-bold uppercase tracking-wider">Study Hub</span>
+           <ShieldQuestion className="w-5 h-5 text-blue-500" />
+           <span className="text-[10px] font-extrabold uppercase tracking-wider">Mentorship</span>
         </button>
 
         {/* Center Fixed Action Button: (+) ASK SYLLABUS DOUBT */}
-        <div className="relative -top-5">
+        <div className="relative -top-4">
            <button 
               onClick={() => setIsModalOpen(true)}
-              className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white dark:border-slate-900 active:scale-95 transition-all"
+              className="w-13 h-13 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white dark:border-slate-900 active:scale-95 transition-all"
               title="Ask Syllabus Doubt"
            >
               <PlusCircle className="w-7 h-7" />
            </button>
         </div>
 
-        {/* Expert Mentorship */}
+        {/* Campus Live (Replaced Mentorship) */}
         <button 
-           onClick={() => { setActiveView('mentorship'); }}
-           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'mentorship' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+           onClick={() => { setIsAnnouncementModalOpen(true); }}
+           className="flex flex-col items-center gap-0.5 transition-all text-slate-500 dark:text-slate-400 hover:text-cyan-500"
         >
-           <ShieldQuestion className="w-5 h-5 text-blue-500" />
-           <span className="text-[10px] font-bold uppercase tracking-wider">Mentorship</span>
+           <Zap className="w-5 h-5 text-cyan-500" />
+           <span className="text-[10px] font-extrabold uppercase tracking-wider">Campus Live</span>
         </button>
 
-        {/* My Insights */}
+        {/* Profile Settings (Replaced Insights) */}
         <button 
-           onClick={() => { setActiveView('insights'); }}
-           className={`flex flex-col items-center gap-1 transition-all ${activeView === 'insights' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+           onClick={() => { setIsProfileModalOpen(true); }}
+           className="flex flex-col items-center gap-0.5 transition-all text-slate-500 dark:text-slate-400 hover:text-purple-500"
         >
-           <BarChart2 className="w-5 h-5 text-emerald-500" />
-           <span className="text-[10px] font-bold uppercase tracking-wider">Insights</span>
+           <User className="w-5 h-5 text-purple-500" />
+           <span className="text-[10px] font-extrabold uppercase tracking-wider">Profile</span>
         </button>
       </div>
 
