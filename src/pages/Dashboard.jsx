@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { Search, Bell, PlusCircle, Ghost, User, X, BookOpen, Trophy, Hash, Star, LogOut, Camera, LayoutDashboard, ShieldQuestion, MapPin, Mic, Loader2, Paperclip, BarChart2, History, Trash2, Moon, Sun, Bookmark, Info, Sparkles, Send, MessageSquare, CheckCircle2, Zap, Flame } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DoubtCard from '../components/DoubtCard';
 import FacultyCareerConnect from '../components/FacultyCareerConnect';
@@ -656,6 +656,20 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Live Campus Announcement Marquee Ticker */}
+      <div className="bg-gradient-to-r from-blue-950 via-[#0f172a] to-blue-950 border-b border-blue-800/80 px-4 py-2 text-xs text-slate-200 shadow-inner flex items-center gap-3 overflow-hidden">
+        <div className="flex items-center gap-1.5 shrink-0 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">
+           <Zap className="w-3 h-3 fill-white" /> Campus Live
+        </div>
+        <div className="flex items-center gap-6 overflow-x-auto hidescrollbar whitespace-nowrap text-slate-300 font-medium">
+           <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-yellow-400" /> <strong className="text-white">Exam Notice:</strong> Mid-Sem Examination timetable released for CSE & IT departments.</span>
+           <span className="text-slate-600">•</span>
+           <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-blue-400" /> <strong className="text-white">Faculty Notes:</strong> Dr. Arvind Gupta uploaded new Data Structures Question Bank.</span>
+           <span className="text-slate-600">•</span>
+           <span className="flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-orange-400" /> <strong className="text-white">PeerSpace Hackathon:</strong> Registrations live! Earn up to 500 XP.</span>
+        </div>
+      </div>
+
       {/* Main 3-Column Layout */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 items-start">
         
@@ -761,6 +775,147 @@ export default function Dashboard() {
           
           {activeView === 'doubts' && (
             <div className="animate-in fade-in slide-in-from-bottom-2">
+              
+              {/* Gamification & Welcome Hero Card */}
+              <div className="mb-6 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white rounded-3xl p-5 sm:p-6 shadow-xl border border-blue-800/60 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl group-hover:bg-blue-600/20 transition-all pointer-events-none"></div>
+                 
+                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+                    <div>
+                       <div className="flex items-center gap-2 mb-1.5">
+                          <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-sm flex items-center gap-1">
+                             <Flame className="w-3 h-3 fill-white" /> 5 Day Streak
+                          </span>
+                          <span className="bg-purple-900/60 text-purple-200 border border-purple-700/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                             {userRankName} Tier
+                          </span>
+                       </div>
+                       <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                          Welcome back, {isUserAnonymous ? 'Ghost Scholar' : (userProfile?.fullName || 'Student')}! 👋
+                       </h1>
+                       <p className="text-xs sm:text-sm text-blue-200/90 font-medium mt-1">
+                          Solve campus doubts, consult faculty, and level up your engineering skills.
+                       </p>
+
+                       {/* XP Progress Bar */}
+                       <div className="mt-4 max-w-md">
+                          <div className="flex justify-between items-center text-[11px] font-bold text-slate-300 mb-1">
+                             <span>XP Level Progress ({totalUserXP} / 500 XP)</span>
+                             <span className="text-blue-400 font-extrabold">{Math.min(100, Math.round((totalUserXP / 500) * 100))}%</span>
+                          </div>
+                          <div className="w-full h-2.5 bg-blue-950/80 rounded-full overflow-hidden border border-blue-800/60 p-0.5">
+                             <div 
+                                className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(99,102,241,0.6)]"
+                                style={{ width: `${Math.max(10, Math.min(100, (totalUserXP / 500) * 100))}%` }}
+                             ></div>
+                          </div>
+                       </div>
+                    </div>
+
+                    {/* Daily Quests Box */}
+                    <div className="bg-white/10 backdrop-blur-md border border-white/15 p-4 rounded-2xl shrink-0 space-y-2 max-w-xs">
+                       <h4 className="text-xs font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                          <Trophy className="w-4 h-4 text-amber-400" /> Daily Campus Quests
+                       </h4>
+                       <div className="space-y-1.5 text-xs text-slate-200">
+                          <div className="flex items-center gap-2">
+                             <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                             <span>Ask 1 syllabus doubt <strong className="text-amber-300">(+20 XP)</strong></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                             <CheckCircle2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                             <span>Answer a peer's question <strong className="text-amber-300">(+50 XP)</strong></span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              {/* Quick AI Study Prompts Chips */}
+              <div className="mb-6 bg-gradient-to-r from-purple-900/10 via-indigo-900/10 to-blue-900/10 border border-purple-200 dark:border-purple-900/40 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                 <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-600 text-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                       <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-slate-800 dark:text-slate-100">AI Instant Study Helper</p>
+                       <p className="text-[11px] text-slate-500 dark:text-slate-400">Click any prompt to ask AI assistant</p>
+                    </div>
+                 </div>
+
+                 <div className="flex items-center gap-2 overflow-x-auto pb-1 hidescrollbar">
+                    <button 
+                       onClick={() => {
+                          const aiBtn = document.getElementById('ai-assistant-toggle');
+                          if(aiBtn) aiBtn.click();
+                       }}
+                       className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                       💡 Explain Concept in Hindi
+                    </button>
+                    <button 
+                       onClick={() => {
+                          const aiBtn = document.getElementById('ai-assistant-toggle');
+                          if(aiBtn) aiBtn.click();
+                       }}
+                       className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                       📝 Generate Viva Q&A
+                    </button>
+                    <button 
+                       onClick={() => {
+                          const aiBtn = document.getElementById('ai-assistant-toggle');
+                          if(aiBtn) aiBtn.click();
+                       }}
+                       className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-indigo-200 dark:border-indigo-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                       📄 Summarize Notes
+                    </button>
+                 </div>
+              </div>
+
+              {/* Subject Quick Filter Pills Row */}
+              <div className="mb-6">
+                 <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Quick Subject Filter</span>
+                    {selectedTopicFilter && (
+                       <button 
+                          onClick={() => { setSelectedTopicFilter(null); setSearchQuery(''); }}
+                          className="text-xs font-bold text-red-500 hover:underline"
+                       >
+                          Clear Filter
+                       </button>
+                    )}
+                 </div>
+                 <div className="flex items-center gap-2 overflow-x-auto pb-1 hidescrollbar">
+                    {subjects.map((sub, idx) => {
+                       const isSelected = selectedTopicFilter === sub;
+                       return (
+                          <button
+                             key={idx}
+                             onClick={() => {
+                                if (isSelected) {
+                                   setSelectedTopicFilter(null);
+                                   setSearchQuery('');
+                                } else {
+                                   setSelectedTopicFilter(sub);
+                                   setSearchQuery(sub);
+                                }
+                             }}
+                             className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-1.5 shadow-sm ${
+                                isSelected 
+                                   ? 'bg-blue-600 text-white ring-2 ring-blue-400 shadow-blue-500/20' 
+                                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                             }`}
+                          >
+                             <Hash className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-blue-500'}`} />
+                             {sub}
+                          </button>
+                       );
+                    })}
+                 </div>
+              </div>
+
               <div className="bg-white border border-blue-100 p-4 rounded-2xl mb-6 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => { setIsModalOpen(true); if(selectedTopicFilter) setNewTag(selectedTopicFilter); }}>
                   <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center border border-blue-100">
