@@ -412,7 +412,7 @@ export default function FacultyDashboard() {
                    title="Day Mode (Light)"
                 >
                    <Sun className="w-3.5 h-3.5" />
-                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Day</span>
+                   <span className="text-[10px] uppercase tracking-wider">Day</span>
                 </button>
                 <button 
                    onClick={() => applyThemeMode('eyecare')}
@@ -420,7 +420,7 @@ export default function FacultyDashboard() {
                    title="Eye Care Mode (Soft Sepia Reading)"
                 >
                    <Eye className="w-3.5 h-3.5" />
-                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Eye Care</span>
+                   <span className="text-[10px] uppercase tracking-wider">Eye Care</span>
                 </button>
                 <button 
                    onClick={() => applyThemeMode('dark')}
@@ -428,7 +428,7 @@ export default function FacultyDashboard() {
                    title="Night Mode (Dark)"
                 >
                    <Moon className="w-3.5 h-3.5" />
-                   <span className="hidden md:inline text-[10px] uppercase tracking-wider">Night</span>
+                   <span className="text-[10px] uppercase tracking-wider">Night</span>
                 </button>
              </div>
 
@@ -1069,15 +1069,6 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
-
-      {/* Dark Mode FAB */}
-      <button 
-        onClick={toggleDarkMode}
-        className="fixed bottom-6 right-6 z-[100] p-4 bg-[#0f172a] text-white dark:bg-slate-100 dark:text-slate-900 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform cursor-pointer flex items-center justify-center border-2 border-white/20 dark:border-black/10"
-        title="Toggle Dark Mode"
-      >
-        {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-      </button>
 
     </div>
   );

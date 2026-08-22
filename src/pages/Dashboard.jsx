@@ -674,7 +674,7 @@ export default function Dashboard() {
           {/* Right Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
             
-            {/* 3-Option Theme Mode Switcher */}
+            {/* 3-Option Unified Theme Mode Switcher */}
             <div className="flex items-center bg-blue-950/80 border border-blue-800/80 rounded-full p-0.5 shadow-inner">
                <button 
                   onClick={() => applyThemeMode('light')}
@@ -682,7 +682,7 @@ export default function Dashboard() {
                   title="Day Mode (Light)"
                >
                   <Sun className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Day</span>
+                  <span className="text-[10px] uppercase tracking-wider">Day</span>
                </button>
                <button 
                   onClick={() => applyThemeMode('eyecare')}
@@ -690,7 +690,7 @@ export default function Dashboard() {
                   title="Eye Care Mode (Soft Sepia Reading)"
                >
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Eye Care</span>
+                  <span className="text-[10px] uppercase tracking-wider">Eye Care</span>
                </button>
                <button 
                   onClick={() => applyThemeMode('dark')}
@@ -698,7 +698,7 @@ export default function Dashboard() {
                   title="Night Mode (Dark)"
                >
                   <Moon className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline text-[10px] uppercase tracking-wider">Night</span>
+                  <span className="text-[10px] uppercase tracking-wider">Night</span>
                </button>
             </div>
 
