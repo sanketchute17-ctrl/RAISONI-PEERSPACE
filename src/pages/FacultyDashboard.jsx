@@ -118,47 +118,33 @@ export default function FacultyDashboard() {
 
   useEffect(() => {
     if (activeView === 'insights') {
-      const fetchInsights = async () => {
-        setLoadingInsights(true);
-        const defaultChartData = [
-          { name: 'Jan', requests: 3, doubts: 2 },
-          { name: 'Feb', requests: 5, doubts: 4 },
-          { name: 'Mar', requests: 4, doubts: 6 },
-          { name: 'Apr', requests: 7, doubts: 5 },
-          { name: 'May', requests: 6, doubts: 9 },
-        ];
-        const defaultInsights = {
-          pendingRequests: requests ? requests.filter(r => r.status === 'Pending').length : 1,
-          actionedRequests: requests ? requests.filter(r => r.status !== 'Pending').length : 4,
-          doubtsAnswered: 7,
-          chartData: defaultChartData,
-          aiFeedback: "Excellent mentorship engagement this semester! Students benefit greatly from your quick guidance."
-        };
-        try {
-          const res = await fetch(`${API_BASE}/api/faculty-insights`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              facultyName: userProfile?.fullName || 'Professor',
-              requests: requests || [],
-              doubts: doubts || []
-            })
-          });
-          const data = await res.json();
-          if (data.success && data.data && data.data.chartData && data.data.chartData.length > 0) {
-            setInsights(data.data);
-          } else {
-            setInsights(defaultInsights);
-          }
-        } catch (err) {
-          console.error("Error fetching faculty insights:", err);
-          setInsights(defaultInsights);
-        }
-        setLoadingInsights(false);
+      setLoadingInsights(true);
+      const pendingCount = (requests || []).filter(r => r.status === 'Pending' || r.status === 'Pending Advice').length;
+      const solvedCount = (requests || []).filter(r => r.status === 'Approved' || r.status === 'Solved').length;
+      const totalAnswersGiven = (doubts || []).reduce((acc, d) => {
+        const facAnswers = (d.answers || []).filter(a => a.author === (userProfile?.fullName || 'Professor') || a.authorId === currentUser?.uid);
+        return acc + facAnswers.length;
+      }, 0);
+
+      const months = ["Jan", "Feb", "Mar", "Apr", "May"];
+      const chartData = months.map((m, i) => ({
+        name: m,
+        requests: Math.max(1, Math.floor((requests.length * (i + 1)) / 5) || (i + 1)),
+        doubts: Math.max(1, Math.floor((totalAnswersGiven * (i + 1)) / 5) || i)
+      }));
+
+      const computedInsights = {
+        pendingRequests: pendingCount,
+        actionedRequests: solvedCount,
+        doubtsAnswered: totalAnswersGiven,
+        chartData,
+        aiFeedback: `Great teaching activity, ${userProfile?.fullName || 'Professor'}! You have answered ${totalAnswersGiven} syllabus doubts and resolved ${solvedCount} student mentorship requests.`
       };
-      fetchInsights();
+
+      setInsights(computedInsights);
+      setLoadingInsights(false);
     }
-  }, [activeView]);
+  }, [activeView, requests, doubts, userProfile, currentUser]);
 
   useEffect(() => {
     // Real-time listener for mentorship requests targeted specifically to this logged-in faculty
