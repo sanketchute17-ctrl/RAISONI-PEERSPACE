@@ -1050,27 +1050,7 @@ export default function Dashboard() {
 
           </div>
 
-          {/* Trending Campus Topics Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
-             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
-               <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
-             </h3>
-             <div className="flex flex-wrap gap-1.5">
-                {topTrending.length === 0 ? (
-                   <span className="text-xs text-slate-400">#GENERAL</span>
-                ) : (
-                   topTrending.map((tag, idx) => (
-                      <button 
-                         key={idx}
-                         onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
-                         className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
-                      >
-                         #{tag}
-                      </button>
-                   ))
-                )}
-             </div>
-          </div>
+
 
           {/* Quick Academic Resources Shortcuts Card */}
           <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-4 shadow-sm border border-blue-800/60">
@@ -1280,27 +1260,7 @@ export default function Dashboard() {
           )}
 
           {activeView === 'bookmarks' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2">
-               <div className="flex items-center justify-between mb-6 px-2">
-                 <h2 className="text-2xl font-black text-[#0f172a] dark:text-white flex items-center gap-2">
-                   <Bookmark className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-                   Saved Bookmarks
-                 </h2>
-               </div>
-               <div className="space-y-4">
-                  {doubts.filter(d => userProfile?.savedDoubts?.includes(d.id?.toString()) || localSavedDoubts.includes(d.id)).length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                      <Bookmark className="w-16 h-16 mb-4 text-slate-200 dark:text-slate-700" />
-                      <h3 className="font-bold text-xl mb-2 text-slate-500">No bookmarks yet</h3>
-                      <p className="text-sm">Save questions you want to revisit later!</p>
-                    </div>
-                  ) : (
-                    doubts.filter(d => userProfile?.savedDoubts?.includes(d.id?.toString()) || localSavedDoubts.includes(d.id)).map(doubt => (
-                       <DoubtCard key={doubt.id} doubt={doubt} currentUser={currentUser} userProfile={userProfile} isUserAnonymous={isUserAnonymous} />
-                    ))
-                  )}
-               </div>
-            </div>
+            <BookmarksView doubts={doubts} userProfile={userProfile} currentUser={currentUser} isUserAnonymous={isUserAnonymous} localSavedDoubts={localSavedDoubts} />
           )}
 
           {activeView === 'mentorship' && (
@@ -1470,6 +1430,28 @@ export default function Dashboard() {
                    ))}
                 </div>
              )}
+          </div>
+
+          {/* Trending Campus Topics Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
+             </h3>
+             <div className="flex flex-wrap gap-1.5">
+                {topTrending.length === 0 ? (
+                   <span className="text-xs text-slate-400">#GENERAL</span>
+                ) : (
+                   topTrending.map((tag, idx) => (
+                      <button 
+                         key={idx}
+                         onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
+                         className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
+                      >
+                         #{tag}
+                      </button>
+                   ))
+                )}
+             </div>
           </div>
 
           {/* Campus Community Guidelines Card */}
