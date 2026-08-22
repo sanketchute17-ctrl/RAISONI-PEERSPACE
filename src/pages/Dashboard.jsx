@@ -1102,16 +1102,16 @@ export default function Dashboard() {
                 <BookOpen className="w-3.5 h-3.5 text-blue-400" /> Campus Resources
              </h4>
              <div className="space-y-1.5 text-xs">
+                <button onClick={() => { setActiveView('study_hub'); }} className="w-full text-left p-2 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 font-bold transition-colors flex items-center justify-between border border-cyan-500/40">
+                   <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-cyan-300" /> View Faculty Notes & PDFs</span>
+                   <span className="text-cyan-300">→</span>
+                </button>
                 <button onClick={() => { setIsModalOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
                    <span>Ask Syllabus Doubt</span>
                    <span className="text-blue-300">→</span>
                 </button>
                 <button onClick={() => { setIsAnnouncementModalOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
                    <span>Broadcast Live Alert</span>
-                   <span className="text-blue-300">→</span>
-                </button>
-                <button onClick={() => { setIsAboutOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
-                   <span>Contact Support</span>
                    <span className="text-blue-300">→</span>
                 </button>
              </div>
