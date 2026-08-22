@@ -389,7 +389,8 @@ app.post('/api/ai-translate', async (req, res) => {
     "word": "${word}",
     "meaning": "A 1-2 sentence extremely simple meaning.",
     "explanation": "A slightly longer, student-friendly explanation using a fun real-world analogy.",
-    "hindi": "A short Hindi translation / context of the meaning."
+    "hindi": "A short Hindi translation / context of the meaning in Devnagari script.",
+    "marathi": "A short Marathi translation / context of the meaning in Devnagari script."
   }`;
 
   const text = await callAI({ userPrompt: prompt });
@@ -406,7 +407,8 @@ app.post('/api/ai-translate', async (req, res) => {
     word: word,
     meaning: "A technical term used in academic or professional contexts.",
     explanation: "This term refers to a specific concept in your field of study. Try searching for more context in your textbooks or course materials.",
-    hindi: "यह एक तकनीकी शब्द है।",
+    hindi: "यह आपके पाठ्यक्रम का एक तकनीकी शब्द है।",
+    marathi: "हा तुमच्या अभ्यासक्रमातील एक तांत्रिक शब्द आहे.",
     isUsingFallback: true
   };
   res.json({ success: true, translation: fallbackTranslation });

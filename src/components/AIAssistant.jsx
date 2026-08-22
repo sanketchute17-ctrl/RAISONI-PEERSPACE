@@ -50,73 +50,85 @@ export default function AIAssistant() {
         word: 'Recursion',
         meaning: 'A programming technique where a function calls itself to break down a complex problem.',
         explanation: 'Imagine standing between two parallel mirrors where your image repeats until you reach a base condition (stop point).',
-        hindi: 'पुनरावृत्ति (एक फ़ंक्शन द्वारा स्वयं को बार-बार निष्पादित करना)'
+        hindi: 'पुनरावृत्ति (एक फ़ंक्शन द्वारा स्वयं को बार-बार निष्पादित करके बड़ी समस्या को हल करना)',
+        marathi: 'पुनरावृत्ती (एका फंक्शनने स्वतःला वारंवार कॉल करून मोठी समस्या छोट्या भागात सोडवणे)'
       },
       'oop': {
         word: 'Object-Oriented Programming (OOP)',
         meaning: 'A programming paradigm structured around real-world objects and classes.',
         explanation: 'Think of a car blueprint (Class) and the physical red sports car built from it (Object).',
-        hindi: 'ऑब्जेक्ट-ओरिएंटेड प्रोग्रामिंग (डेटा और फ़ंक्शंस को एक साथ जोड़ना)'
+        hindi: 'ऑब्जेक्ट-ओरिएंटेड प्रोग्रामिंग (डेटा और फंक्शंस को एक ऑब्जेक्ट/क्लास में जोड़ना)',
+        marathi: 'ऑब्जेक्ट-ओरिएंटेड प्रोग्रामिंग (डेटा आणि फंक्शन्सना एका ऑब्जेक्ट/क्लासमध्ये एकत्र आणणे)'
       },
       'polymorphism': {
         word: 'Polymorphism',
-        meaning: 'The ability of a function or method to operate in multiple forms based on the context.',
+        meaning: 'The ability of a function or method to operate in multiple forms based on context.',
         explanation: 'Like a smartphone power button: one press locks the screen, holding it opens power options.',
-        hindi: 'बहुरूपता (एक ही नाम, अलग-अलग परिस्थितियों में अलग काम)'
+        hindi: 'बहुरूपता (एक ही नाम के फंक्शन का परिस्थिति के अनुसार अलग काम करना)',
+        marathi: 'बहुरूपता (एकाच नावाचे फंक्शन परिस्थितीनुसार वेगवेगळ्या स्वरूपात काम करणे)'
       },
       'inheritance': {
         word: 'Inheritance',
         meaning: 'A mechanism where a child class acquires attributes and methods of a parent class.',
         explanation: 'Like inheriting your parent’s eye color while also developing your own personal skills.',
-        hindi: 'अनुवंशिकता (पुरानी क्लास के गुणों को नई क्लास में उपयोग करना)'
+        hindi: 'अनुवंशिकता (पुरानी क्लास के गुणों और फंक्शंस को नई क्लास में री-यूज़ करना)',
+        marathi: 'वारसाहक्क (पुनर्वापर - जुन्या क्लासचे गुणधर्म नवीन क्लासमध्ये वापरणे)'
       },
       'encapsulation': {
         word: 'Encapsulation',
         meaning: 'Wrapping data and methods inside a single class while restricting direct access from outside.',
         explanation: 'Like a medical pill capsule that protects bitter medicine inside a protective shell.',
-        hindi: 'कैप्सूलीकरण (डेटा को छुपाकर सुरक्षित रखना)'
+        hindi: 'कैप्सूलीकरण (डेटा और मेथड्स को एक कैप्सूल की तरह सुरक्षित बांधकर रखना)',
+        marathi: 'कॅप्सुलेशन (डेटा आणि पद्धतींना एका घटकात सुरक्षित एकत्र बांधणे)'
       },
       'dbms': {
         word: 'Database Management System (DBMS)',
         meaning: 'Software designed to store, manage, retrieve, and query data efficiently.',
         explanation: 'Like a digital library catalog system that locates any book among millions in milliseconds.',
-        hindi: 'डेटाबेस प्रबंधन प्रणाली (डेटा को व्यवस्थित और सुरक्षित रखने की प्रणाली)'
+        hindi: 'डेटाबेस प्रबंधन प्रणाली (डेटा को व्यवस्थित तरीके से स्टोर, खोजना और मैनेज करना)',
+        marathi: 'डेटाबेस व्यवस्थापन प्रणाली (डेटा सुरक्षितपणे साठवणे आणि शोधणे)'
       },
       'deadlock': {
         word: 'Deadlock',
         meaning: 'A situation where two or more processes are blocked forever, waiting for each other.',
         explanation: 'Like two trains approaching each other on a single track, both refusing to back up.',
-        hindi: 'डेडलॉक (परस्पर निर्भरता के कारण सब कुछ रुक जाना)'
+        hindi: 'डेडलॉक (ऐसी स्थिति जहां 2 या अधिक प्रोसेस एक-दूसरे के रिसोर्स का इंतजार करते हुए रुक जाती हैं)',
+        marathi: 'डेडलॉक (अशी स्थिती जिथे दोन किंवा अधिक प्रक्रिया एकमेकांच्या संसाधनाची वाट पाहत थांबतात)'
       },
       'algorithm': {
         word: 'Algorithm',
         meaning: 'A clear, step-by-step sequence of instructions to solve a problem.',
         explanation: 'Like a recipe for baking a cake: follow exact steps in order for a guaranteed result.',
-        hindi: 'एल्गोरिदम (समस्या हल करने का चरणबद्ध तरीका)'
+        hindi: 'एल्गोरिदम (किसी कार्य या समस्या को हल करने के चरणबद्ध निर्देश)',
+        marathi: 'अल्गोरिदम (कोणतीही समस्या सोडवण्यासाठी पायरी-पायरीचे नियम/सूचना)'
       },
       'compiler': {
         word: 'Compiler',
         meaning: 'A translator program that converts high-level source code into CPU machine code.',
         explanation: 'Like a language translator translating an entire English book into Hindi all at once.',
-        hindi: 'कंपाइलर (उच्च-स्तरीय कोड को कंप्यूटर कोड में बदलने वाला टूल)'
+        hindi: 'कंपाइलर (हाई-लेवल प्रोग्रामिंग कोड को सीधे मशीन कोड में बदलने वाला टूल)',
+        marathi: 'कंपायलर (हाय-लेव्हल कोडचे थेट मशीन कोडमध्ये रूपांतर करणारा टूल)'
       },
       'operating system': {
         word: 'Operating System (OS)',
         meaning: 'Software managing computer hardware and software resources.',
         explanation: 'Like a college principal directing departments, classrooms, and schedules seamlessly.',
-        hindi: 'ऑपरेटिंग सिस्टम (कंप्यूटर हार्डवेयर को संचालित करने वाला मुख्य सॉफ़्टवेयर)'
+        hindi: 'ऑपरेटिंग सिस्टम (कंप्यूटर हार्डवेयर और ऐप्स को कंट्रोल करने वाला मेन सॉफ्टवेयर)',
+        marathi: 'ऑपरेटिंग सिस्टीम (संगणक हार्डवेअर आणि सॉफ्टवेअर नियंत्रित करणारी मुख्य प्रणाली)'
       },
       'stack': {
         word: 'Stack Data Structure',
         meaning: 'A linear data structure operating on Last-In, First-Out (LIFO).',
         explanation: 'Like a stack of dinner plates at a party: the last plate put on top is taken first.',
-        hindi: 'स्टैक (LIFO - जो बाद में आए, वही पहले निकले)'
+        hindi: 'स्टैक (LIFO - जो एलिमेंट अंत में आए, वही सबसे पहले बाहर निकले)',
+        marathi: 'स्टॅक (LIFO - शेवटी आलेला घटक सर्वात आधी बाहेर पडतो)'
       },
       'queue': {
         word: 'Queue Data Structure',
         meaning: 'A linear data structure operating on First-In, First-Out (FIFO).',
         explanation: 'Like a line at a college canteen: the first person in line gets served first.',
-        hindi: 'क्यू (FIFO - जो पहले आए, वही पहले पाए)'
+        hindi: 'क्यू (FIFO - जो एलिमेंट पहले आए, वही सबसे पहले बाहर निकले)',
+        marathi: 'क्यू (FIFO - आधी आलेला घटक सर्वात आधी बाहेर पडतो)'
       }
     };
 
@@ -133,9 +145,10 @@ export default function AIAssistant() {
     const titleCase = word.charAt(0).toUpperCase() + word.slice(1);
     return {
       word: titleCase,
-      meaning: `${titleCase} is a core academic term used in engineering and syllabus concepts.`,
-      explanation: `Understanding ${titleCase} allows you to solve complex exam questions by breaking down logical steps.`,
-      hindi: `${titleCase} (यह आपके पाठ्यक्रम का एक महत्वपूर्ण तकनीकी शब्द है)`
+      meaning: `${titleCase} is a core academic concept used in engineering and syllabus topics.`,
+      explanation: `Understanding ${titleCase} allows you to solve complex syllabus exam questions by breaking down logical steps.`,
+      hindi: `${titleCase} (यह आपके पाठ्यक्रम का एक महत्वपूर्ण तकनीकी शब्द है)`,
+      marathi: `${titleCase} (हा तुमच्या अभ्यासक्रमातील एक महत्त्वाचा तांत्रिक संकल्पना आहे)`
     };
   };
 
@@ -367,23 +380,33 @@ export default function AIAssistant() {
                       <h4 className="font-extrabold text-lg text-slate-800 capitalize tracking-tight">{translationResult.word}</h4>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div>
                         <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Simple Meaning</span>
-                        <p className="text-sm font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1">
+                        <p className="text-xs sm:text-sm font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1">
                           {translationResult.meaning}
                         </p>
                       </div>
                       <div>
                         <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Student-Friendly Explanation</span>
-                        <p className="text-sm font-medium text-slate-600 leading-relaxed bg-blue-50/50 p-2.5 rounded-lg border border-blue-50 mt-1">
+                        <p className="text-xs sm:text-sm font-medium text-slate-600 leading-relaxed bg-blue-50/50 p-2.5 rounded-lg border border-blue-50 mt-1">
                           {translationResult.explanation}
                         </p>
                       </div>
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider drop-shadow-sm">Hindi Context (हिन्दी)</span>
-                        <p className="text-sm font-medium text-amber-900 bg-amber-50 p-2.5 rounded-lg border border-amber-100 mt-1">
+                        <span className="text-[10px] font-extrabold uppercase text-amber-700 tracking-wider flex items-center gap-1">
+                          🇮🇳 Hindi Translation (हिन्दी अर्थ व व्याख्या)
+                        </span>
+                        <p className="text-xs sm:text-sm font-medium text-amber-950 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200/60 mt-1">
                           {translationResult.hindi}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase text-orange-700 tracking-wider flex items-center gap-1">
+                          🚩 Marathi Translation (मराठी अर्थ व स्पष्टीकरण)
+                        </span>
+                        <p className="text-xs sm:text-sm font-medium text-orange-950 bg-orange-50/80 p-2.5 rounded-lg border border-orange-200/60 mt-1">
+                          {translationResult.marathi}
                         </p>
                       </div>
                     </div>
