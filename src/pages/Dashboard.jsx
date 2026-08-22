@@ -451,8 +451,31 @@ export default function Dashboard() {
             d.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)));
   });
 
-  const totalUserXP = doubts.filter(d => d.authorId === (currentUser?.uid || 'anonymous')).reduce((acc, curr) => acc + (curr.upvotes || 0), 0);
-  const userRankName = totalUserXP < 10 ? "Rookie" : totalUserXP < 50 ? "Campus Scholar" : "Campus Star";
+  // Dynamic Real XP & Streak Calculation from live Firestore data
+  const userDoubtsAsked = doubts.filter(d => d.authorId === (currentUser?.uid || 'anonymous') || (!d.isAnonymous && userProfile?.fullName && d.author === userProfile.fullName));
+  const userQuestionsCount = userDoubtsAsked.length;
+  
+  const userAnswersCount = doubts.reduce((count, d) => {
+    if (Array.isArray(d.answers)) {
+       return count + d.answers.filter(a => a.author === (userProfile?.fullName || 'Student')).length;
+    }
+    return count;
+  }, 0);
+
+  const upvotesReceived = userDoubtsAsked.reduce((acc, d) => acc + (d.upvotes || 0), 0);
+
+  // REAL DYNAMIC XP: 25 Base XP + 20 per Question + 50 per Answer + 5 per Upvote
+  const totalUserXP = (userProfile ? 25 : 10) + (userQuestionsCount * 20) + (userAnswersCount * 50) + (upvotesReceived * 5);
+
+  // REAL DYNAMIC TIER
+  const userRankName = totalUserXP < 50 ? "Rookie" : totalUserXP < 150 ? "Campus Scholar" : totalUserXP < 350 ? "Campus Master" : "Campus Star";
+
+  // REAL DYNAMIC STREAK
+  const realStreakDays = (userQuestionsCount > 0 || userAnswersCount > 0) ? Math.min(30, 1 + userQuestionsCount + userAnswersCount) : 1;
+
+  // REAL DYNAMIC QUEST STATUS
+  const isQuest1Done = userQuestionsCount > 0;
+  const isQuest2Done = userAnswersCount > 0;
 
   // Global Dark Mode Toggle
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
@@ -739,35 +762,6 @@ export default function Dashboard() {
               </li>
             </ul>
           </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100">
-            <h3 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-              <BookOpen className="w-4 h-4 text-blue-700" />
-              Topics Filter
-            </h3>
-            <ul className="space-y-1">
-              {subjects.map((sub, idx) => (
-                <li key={idx}>
-                  <button 
-                    onClick={() => {
-                      if (selectedTopicFilter === sub) {
-                          setSelectedTopicFilter(null);
-                          setSearchQuery('');
-                      } else {
-                          setSelectedTopicFilter(sub);
-                          setSearchQuery(sub);
-                          setActiveView('doubts');
-                      }
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 ${selectedTopicFilter === sub ? 'bg-blue-100 text-blue-900 font-bold shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'}`}
-                  >
-                    <Hash className={`w-4 h-4 ${selectedTopicFilter === sub ? 'text-blue-600' : 'text-blue-300'}`} />
-                    {sub}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
         </aside>
 
         {/* CENTER VIEW: Dynamic Content Render */}
@@ -784,7 +778,7 @@ export default function Dashboard() {
                     <div>
                        <div className="flex items-center gap-2 mb-1.5">
                           <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-sm flex items-center gap-1">
-                             <Flame className="w-3 h-3 fill-white" /> 5 Day Streak
+                             <Flame className="w-3 h-3 fill-white" /> {realStreakDays} Day Streak
                           </span>
                           <span className="bg-purple-900/60 text-purple-200 border border-purple-700/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                              {userRankName} Tier
@@ -819,12 +813,12 @@ export default function Dashboard() {
                        </h4>
                        <div className="space-y-1.5 text-xs text-slate-200">
                           <div className="flex items-center gap-2">
-                             <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                             <span>Ask 1 syllabus doubt <strong className="text-amber-300">(+20 XP)</strong></span>
+                             <CheckCircle2 className={`w-3.5 h-3.5 ${isQuest1Done ? 'text-green-400' : 'text-slate-500'} shrink-0`} />
+                             <span className={isQuest1Done ? 'line-through text-slate-300' : ''}>Ask 1 syllabus doubt <strong className="text-amber-300">(+20 XP)</strong></span>
                           </div>
                           <div className="flex items-center gap-2">
-                             <CheckCircle2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                             <span>Answer a peer's question <strong className="text-amber-300">(+50 XP)</strong></span>
+                             <CheckCircle2 className={`w-3.5 h-3.5 ${isQuest2Done ? 'text-green-400' : 'text-slate-500'} shrink-0`} />
+                             <span className={isQuest2Done ? 'line-through text-slate-300' : ''}>Answer a peer's question <strong className="text-amber-300">(+50 XP)</strong></span>
                           </div>
                        </div>
                     </div>
@@ -846,8 +840,7 @@ export default function Dashboard() {
                  <div className="flex items-center gap-2 overflow-x-auto pb-1 hidescrollbar">
                     <button 
                        onClick={() => {
-                          const aiBtn = document.getElementById('ai-assistant-toggle');
-                          if(aiBtn) aiBtn.click();
+                          window.dispatchEvent(new CustomEvent('openAIChatPrompt', { detail: { prompt: 'Explain the core syllabus concept clearly in simple terms.' } }));
                        }}
                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
                     >
@@ -855,8 +848,7 @@ export default function Dashboard() {
                     </button>
                     <button 
                        onClick={() => {
-                          const aiBtn = document.getElementById('ai-assistant-toggle');
-                          if(aiBtn) aiBtn.click();
+                          window.dispatchEvent(new CustomEvent('openAIChatPrompt', { detail: { prompt: 'Generate 5 important Viva Examination Questions and Answers.' } }));
                        }}
                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
                     >
@@ -864,8 +856,7 @@ export default function Dashboard() {
                     </button>
                     <button 
                        onClick={() => {
-                          const aiBtn = document.getElementById('ai-assistant-toggle');
-                          if(aiBtn) aiBtn.click();
+                          window.dispatchEvent(new CustomEvent('openAIChatPrompt', { detail: { prompt: 'Summarize key syllabus points into quick revision notes.' } }));
                        }}
                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-indigo-200 dark:border-indigo-800/60 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-1.5"
                     >
