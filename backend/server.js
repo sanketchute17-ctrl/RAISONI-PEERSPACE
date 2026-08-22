@@ -597,6 +597,291 @@ app.post('/api/faculty-insights', async (req, res) => {
 });
 
 // ==========================================
+// 📚 ACADEMIC STUDY HUB APIs
+// ==========================================
+let studyResources = [
+  {
+    id: 1,
+    title: "Data Structures & Algorithms Handwritten Notes",
+    category: "Notes",
+    branch: "CSE",
+    semester: "Sem 3",
+    subject: "Data Structures",
+    unit: "Unit 1-4",
+    author: "Dr. Arvind Gupta",
+    authorRole: "faculty",
+    downloadCount: 142,
+    fileUrl: "#",
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    title: "Operating Systems 2025 Model Question Bank",
+    category: "Question Banks",
+    branch: "IT",
+    semester: "Sem 4",
+    subject: "Operating Systems",
+    unit: "Unit 1-6",
+    author: "Prof. Sunita R.",
+    authorRole: "faculty",
+    downloadCount: 89,
+    fileUrl: "#",
+    createdAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: 3,
+    title: "Fluid Mechanics Previous Year Solved Papers",
+    category: "Previous Year Papers",
+    branch: "CIVIL",
+    semester: "Sem 4",
+    subject: "Fluid Mechanics",
+    unit: "Unit 1-5",
+    author: "Sanket Chute",
+    authorRole: "student",
+    downloadCount: 210,
+    fileUrl: "#",
+    createdAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
+
+app.get('/api/resources', (req, res) => {
+  const { branch, semester, category, search } = req.query;
+  let filtered = [...studyResources];
+
+  if (branch && branch !== 'All') filtered = filtered.filter(r => r.branch === branch);
+  if (semester && semester !== 'All') filtered = filtered.filter(r => r.semester === semester);
+  if (category && category !== 'All') filtered = filtered.filter(r => r.category === category);
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(r => r.title.toLowerCase().includes(q) || r.subject.toLowerCase().includes(q));
+  }
+
+  res.json({ success: true, data: filtered });
+});
+
+app.post('/api/resources', (req, res) => {
+  const { title, category, branch, semester, subject, unit, author, authorRole, fileUrl } = req.body;
+  if (!title || !subject) {
+    return res.status(400).json({ success: false, message: "Title and Subject are required" });
+  }
+  const newResource = {
+    id: Date.now(),
+    title,
+    category: category || "Notes",
+    branch: branch || "CSE",
+    semester: semester || "Sem 3",
+    subject,
+    unit: unit || "Unit 1",
+    author: author || "Faculty",
+    authorRole: authorRole || "faculty",
+    downloadCount: 0,
+    fileUrl: fileUrl || "#",
+    createdAt: new Date().toISOString()
+  };
+  studyResources.unshift(newResource);
+  res.status(201).json({ success: true, data: newResource });
+});
+
+app.delete('/api/resources/:id', (req, res) => {
+  const { id } = req.params;
+  studyResources = studyResources.filter(r => r.id !== parseInt(id));
+  res.json({ success: true, message: "Resource deleted successfully" });
+});
+
+// ==========================================
+// 👥 PEER GROUPS APIs
+// ==========================================
+let peerGroups = [
+  {
+    id: 101,
+    name: "AI / ML Deep Learning Group",
+    description: "Collaborative study group for Neural Networks, PyTorch & Kaggle competitions.",
+    category: "AI/ML",
+    branch: "CSE / AI",
+    membersCount: 28,
+    isJoined: false,
+    owner: "Samay Raina",
+    posts: [
+      { id: 1, author: "Rahul M.", text: "Anyone working on CNN image classification task for Lab 4?", createdAt: new Date().toISOString() }
+    ]
+  },
+  {
+    id: 102,
+    name: "DSA & LeetCode Crackers",
+    description: "Daily 2 DSA problems discussion, Trees, Graphs, Dynamic Programming & interview prep.",
+    category: "Placement Prep",
+    branch: "All Branches",
+    membersCount: 45,
+    isJoined: true,
+    owner: "Priya S.",
+    posts: [
+      { id: 2, author: "Priya S.", text: "Today's challenge: Slidng Window Maximum (Hard). Drop your solution!", createdAt: new Date().toISOString() }
+    ]
+  },
+  {
+    id: 103,
+    name: "DBMS & SQL Masterclass",
+    description: "Normalization, Transactions, Indexing & SQL query optimization.",
+    category: "Academic",
+    branch: "IT / CSE",
+    membersCount: 19,
+    isJoined: false,
+    owner: "Prof. Arvind",
+    posts: []
+  }
+];
+
+app.get('/api/peer-groups', (req, res) => {
+  res.json({ success: true, data: peerGroups });
+});
+
+app.post('/api/peer-groups', (req, res) => {
+  const { name, description, category, branch, owner } = req.body;
+  if (!name) return res.status(400).json({ success: false, message: "Group name is required" });
+  const newGroup = {
+    id: Date.now(),
+    name,
+    description: description || "",
+    category: category || "General",
+    branch: branch || "All",
+    membersCount: 1,
+    isJoined: true,
+    owner: owner || "Student",
+    posts: []
+  };
+  peerGroups.unshift(newGroup);
+  res.status(201).json({ success: true, data: newGroup });
+});
+
+app.post('/api/peer-groups/:id/join', (req, res) => {
+  const { id } = req.params;
+  const group = peerGroups.find(g => g.id === parseInt(id));
+  if (!group) return res.status(404).json({ success: false, message: "Group not found" });
+  group.isJoined = !group.isJoined;
+  group.membersCount += group.isJoined ? 1 : -1;
+  res.json({ success: true, isJoined: group.isJoined, membersCount: group.membersCount });
+});
+
+app.post('/api/peer-groups/:id/posts', (req, res) => {
+  const { id } = req.params;
+  const { text, author } = req.body;
+  const group = peerGroups.find(g => g.id === parseInt(id));
+  if (!group) return res.status(404).json({ success: false, message: "Group not found" });
+  const newPost = {
+    id: Date.now(),
+    author: author || "Member",
+    text,
+    createdAt: new Date().toISOString()
+  };
+  group.posts.unshift(newPost);
+  res.status(201).json({ success: true, data: newPost });
+});
+
+// ==========================================
+// 🚀 PLACEMENT HUB APIs
+// ==========================================
+let placementDrives = [
+  {
+    id: 1,
+    company: "TCS Ninja / Digital",
+    role: "System Engineer & Software Developer",
+    eligibility: "CGPA 6.0+",
+    branches: ["CSE", "IT", "EXTC", "MECH", "CIVIL"],
+    package: "₹3.6 LPA - ₹7.2 LPA",
+    location: "Pune / Mumbai / PAN India",
+    deadline: "2026-09-15",
+    process: "Aptitude Test -> Coding Test -> Technical Interview -> HR Round",
+    status: "Active"
+  },
+  {
+    id: 2,
+    company: "Infosys Specialist Programmer",
+    role: "Specialist Programmer & Digital Specialist",
+    eligibility: "CGPA 7.5+",
+    branches: ["CSE", "IT", "AI"],
+    package: "₹9.5 LPA",
+    location: "Bangalore / Hyderabad",
+    deadline: "2026-09-30",
+    process: "HackWithInfy / Hackathon -> Coding Interview -> HR",
+    status: "Upcoming"
+  }
+];
+
+let interviewExperiences = [
+  {
+    id: 1,
+    company: "TCS Digital",
+    role: "Software Engineer",
+    author: "Akash Verma (CSE 2025)",
+    questions: "1. Explain B-Trees vs B+ Trees\n2. Solve DP Problem: Longest Common Subsequence\n3. SQL Query for Second Highest Salary",
+    rounds: "3 Rounds (Aptitude + Technical + HR)",
+    difficulty: "Medium",
+    tips: "Focus heavily on Data Structures, OOPs concepts, and DBMS SQL queries.",
+    upvotes: 24,
+    createdAt: new Date().toISOString()
+  }
+];
+
+app.get('/api/placements', (req, res) => {
+  res.json({ success: true, drives: placementDrives, experiences: interviewExperiences });
+});
+
+app.post('/api/placements/experiences', (req, res) => {
+  const { company, role, author, questions, rounds, difficulty, tips } = req.body;
+  if (!company || !questions) {
+    return res.status(400).json({ success: false, message: "Company and Questions details are required" });
+  }
+  const newExp = {
+    id: Date.now(),
+    company,
+    role: role || "Software Engineer",
+    author: author || "Student",
+    questions,
+    rounds: rounds || "Technical & HR",
+    difficulty: difficulty || "Medium",
+    tips: tips || "Review core syllabus and DSA.",
+    upvotes: 0,
+    createdAt: new Date().toISOString()
+  };
+  interviewExperiences.unshift(newExp);
+  res.status(201).json({ success: true, data: newExp });
+});
+
+// ==========================================
+// 🔍 CAMPUS KNOWLEDGE UNIFIED SEARCH API
+// ==========================================
+app.get('/api/campus-knowledge/search', (req, res) => {
+  const { query: searchQuery, category } = req.query;
+  const q = (searchQuery || '').toLowerCase().trim();
+
+  const results = {
+    doubts: questions.filter(d => !q || d.title.toLowerCase().includes(q) || d.description.toLowerCase().includes(q)),
+    resources: studyResources.filter(r => !q || r.title.toLowerCase().includes(q) || r.subject.toLowerCase().includes(q)),
+    placements: interviewExperiences.filter(e => !q || e.company.toLowerCase().includes(q) || e.questions.toLowerCase().includes(q)),
+    announcements: placementDrives
+  };
+
+  res.json({ success: true, query: searchQuery, results });
+});
+
+// ==========================================
+// 🏆 GAMIFICATION & ACHIEVEMENTS APIs
+// ==========================================
+let achievementsList = [
+  { id: "first_question", title: "First Question", desc: "Asked your first syllabus doubt on PeerSpace", icon: "❓", xp: 10 },
+  { id: "first_answer", title: "First Answer", desc: "Helped a classmate by answering a question", icon: "🎯", xp: 20 },
+  { id: "streak_7", title: "7 Day Streak", desc: "Maintained a 7-day continuous study streak", icon: "🔥", xp: 50 },
+  { id: "resource_contributor", title: "Resource Contributor", desc: "Uploaded study materials to Campus Study Hub", icon: "📚", xp: 30 },
+  { id: "problem_solver", title: "Problem Solver", desc: "Had 5 answers accepted as correct solutions", icon: "💡", xp: 100 },
+  { id: "faculty_helper", title: "Faculty Helper", desc: "Answer verified by Raisoni Faculty", icon: "👨‍🏫", xp: 75 },
+  { id: "placement_ready", title: "Placement Ready", desc: "Shared interview experience or placement prep notes", icon: "🚀", xp: 40 }
+];
+
+app.get('/api/achievements', (req, res) => {
+  res.json({ success: true, data: achievementsList });
+});
+
+// ==========================================
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   app.listen(PORT, () => {

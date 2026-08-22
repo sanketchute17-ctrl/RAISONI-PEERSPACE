@@ -9,6 +9,14 @@ import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthe
 import { doc, getDoc, updateDoc, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AIAssistant from '../components/AIAssistant';
+import CampusKnowledge from '../components/CampusKnowledge';
+import StudyHub from '../components/StudyHub';
+import PeerGroups from '../components/PeerGroups';
+import AIStudyPage from '../components/AIStudyPage';
+import PlacementHub from '../components/PlacementHub';
+import GamificationView from '../components/GamificationView';
+import NotificationsView from '../components/NotificationsView';
+import BookmarksView from '../components/BookmarksView';
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
@@ -897,68 +905,157 @@ export default function Dashboard() {
         {/* LEFT SIDEBAR: Navigation & Categorization */}
         <aside className="hidden md:block w-64 shrink-0 top-24 sticky space-y-6">
           
-          {/* Global Navigation */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
-            <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-              <LayoutDashboard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Menu
-            </h3>
-            <ul className="space-y-1">
-              <li>
-                <button 
-                  onClick={() => setActiveView('doubts')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'doubts' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
-                >
-                  <Hash className={`w-4 h-4 ${activeView === 'doubts' ? 'text-blue-200' : 'text-blue-500'}`} />
-                  Campus Doubts
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => setActiveView('mentorship')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
-                >
-                  <ShieldQuestion className={`w-4 h-4 ${activeView === 'mentorship' ? 'text-blue-200' : 'text-blue-500'}`} />
-                  Expert Mentorship
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => setActiveView('insights')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'insights' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
-                >
-                  <BarChart2 className={`w-4 h-4 ${activeView === 'insights' ? 'text-blue-200' : 'text-blue-500'}`} />
-                  My Insights
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => setActiveView('history')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'history' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
-                >
-                  <History className={`w-4 h-4 ${activeView === 'history' ? 'text-blue-200' : 'text-blue-500'}`} />
-                  My History
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => setActiveView('bookmarks')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'bookmarks' ? 'bg-yellow-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-yellow-50 dark:hover:bg-slate-700 hover:text-yellow-600'}`}
-                >
-                  <Bookmark className={`w-4 h-4 ${activeView === 'bookmarks' ? 'text-yellow-100' : 'text-yellow-500'}`} />
-                  Saved Bookmarks
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => setIsAboutOpen(true)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${isAboutOpen ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-600'}`}
-                >
-                  <Info className={`w-4 h-4 ${isAboutOpen ? 'text-indigo-200' : 'text-indigo-500'}`} />
-                  About App
-                </button>
-              </li>
-            </ul>
+          {/* Global Student Navigation */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-slate-700 space-y-4">
+            
+            {/* MAIN SECTION */}
+            <div>
+              <h3 className="font-extrabold text-[11px] text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">
+                MAIN
+              </h3>
+              <ul className="space-y-1 text-xs font-bold">
+                <li>
+                  <button 
+                    onClick={() => setActiveView('doubts')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'doubts' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Hash className="w-4 h-4 text-blue-400" /> Campus Doubts
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('mentorship')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <ShieldQuestion className="w-4 h-4 text-blue-400" /> Expert Mentorship
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('study_hub')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'study_hub' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <BookOpen className="w-4 h-4 text-indigo-400" /> Study Hub
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('peer_groups')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'peer_groups' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <User className="w-4 h-4 text-purple-400" /> Peer Groups
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('ai_study')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'ai_study' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Sparkles className="w-4 h-4 text-yellow-400" /> AI Study Assistant
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('campus_knowledge')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'campus_knowledge' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Search className="w-4 h-4 text-cyan-400" /> Campus Knowledge
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('placement_hub')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'placement_hub' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Star className="w-4 h-4 text-amber-400" /> Placement Hub
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* PERSONAL SECTION */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-extrabold text-[11px] text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">
+                PERSONAL
+              </h3>
+              <ul className="space-y-1 text-xs font-bold">
+                <li>
+                  <button 
+                    onClick={() => setActiveView('insights')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'insights' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <BarChart2 className="w-4 h-4 text-blue-400" /> My Insights
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('history')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'history' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <History className="w-4 h-4 text-blue-400" /> My History
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('bookmarks')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'bookmarks' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Bookmark className="w-4 h-4 text-amber-400" /> Saved Bookmarks
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setActiveView('notifications')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'notifications' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Bell className="w-4 h-4 text-blue-400" /> Notifications
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* GAMIFICATION SECTION */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-extrabold text-[11px] text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">
+                GAMIFICATION
+              </h3>
+              <ul className="space-y-1 text-xs font-bold">
+                <li>
+                  <button 
+                    onClick={() => setActiveView('leaderboard')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 ${activeView === 'leaderboard' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Trophy className="w-4 h-4 text-amber-500" /> Leaderboard
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* SYSTEM SECTION */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-extrabold text-[11px] text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2 px-2">
+                SYSTEM
+              </h3>
+              <ul className="space-y-1 text-xs font-bold">
+                <li>
+                  <button 
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className="w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700"
+                  >
+                    <User className="w-4 h-4 text-blue-500" /> Settings & Security
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setIsAboutOpen(true)}
+                    className="w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700"
+                  >
+                    <Info className="w-4 h-4 text-indigo-500" /> About App
+                  </button>
+                </li>
+              </ul>
+            </div>
+
           </div>
 
           {/* Top Campus Contributors Leaderboard Card */}
@@ -1349,6 +1446,34 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
+          )}
+
+          {activeView === 'study_hub' && (
+            <StudyHub currentUser={currentUser} userProfile={userProfile} role="student" />
+          )}
+
+          {activeView === 'peer_groups' && (
+            <PeerGroups currentUser={currentUser} userProfile={userProfile} />
+          )}
+
+          {activeView === 'ai_study' && (
+            <AIStudyPage />
+          )}
+
+          {activeView === 'campus_knowledge' && (
+            <CampusKnowledge doubts={doubts} onSelectDoubt={() => setActiveView('doubts')} />
+          )}
+
+          {activeView === 'placement_hub' && (
+            <PlacementHub userProfile={userProfile} />
+          )}
+
+          {activeView === 'leaderboard' && (
+            <GamificationView leaderboard={leaderboard} totalUserXP={totalUserXP} userStreak={userStreak} userRankName={userRankName} />
+          )}
+
+          {activeView === 'notifications' && (
+            <NotificationsView notifications={notifications} />
           )}
 
         </div>

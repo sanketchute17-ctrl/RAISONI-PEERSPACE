@@ -7,6 +7,9 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { LogOut, Home, Inbox, Archive, CheckCircle, Clock, XCircle, Search, MessageSquare, Plus, Loader2, Hash, Star, Sparkles, Printer, Paperclip, FileText, Image as ImageIcon, X, Settings, Camera, User, UserCircle, Sun, Moon, Info, Eye } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import DoubtCard from '../components/DoubtCard';
+import CampusKnowledge from '../components/CampusKnowledge';
+import StudyHub from '../components/StudyHub';
+import NotificationsView from '../components/NotificationsView';
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:5000' : '');
@@ -365,23 +368,19 @@ export default function FacultyDashboard() {
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">Mentorship</p>
-          <NavItem icon={<Inbox />} label="Pending Requests" isActive={activeView === 'mentorship' && activeTab === 'Pending Advice'} onClick={() => { setActiveView('mentorship'); setActiveTab('Pending Advice'); setSelectedRequest(null); }} count={myRequests.filter(r => r.status === 'Pending Advice').length} />
-          <NavItem icon={<CheckCircle />} label="Approved/Actioned" isActive={activeView === 'mentorship' && activeTab === 'Approved'} onClick={() => { setActiveView('mentorship'); setActiveTab('Approved'); setSelectedRequest(null); }} />
-          <NavItem icon={<XCircle />} label="Declined" isActive={activeView === 'mentorship' && activeTab === 'Declined'} onClick={() => { setActiveView('mentorship'); setActiveTab('Declined'); setSelectedRequest(null); }} />
-          
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-6">Community</p>
-          <NavItem icon={<MessageSquare />} label="Campus Doubts" isActive={activeView === 'campus_doubts'} onClick={() => { setActiveView('campus_doubts'); setSelectedRequest(null); }} />
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">FACULTY</p>
+          <NavItem icon={<Inbox />} label="Mentorship Requests" isActive={activeView === 'mentorship' && activeTab === 'Pending Advice'} onClick={() => { setActiveView('mentorship'); setActiveTab('Pending Advice'); setSelectedRequest(null); }} count={myRequests.filter(r => r.status === 'Pending Advice').length} />
+          <NavItem icon={<CheckCircle />} label="Approved Mentorships" isActive={activeView === 'mentorship' && activeTab === 'Approved'} onClick={() => { setActiveView('mentorship'); setActiveTab('Approved'); setSelectedRequest(null); }} />
+          <NavItem icon={<MessageSquare />} label="Student Doubts" isActive={activeView === 'campus_doubts'} onClick={() => { setActiveView('campus_doubts'); setSelectedRequest(null); }} />
+          <NavItem icon={<FileText />} label="Study Resources" isActive={activeView === 'study_resources'} onClick={() => { setActiveView('study_resources'); setSelectedRequest(null); }} />
+          <NavItem icon={<Search />} label="Campus Knowledge" isActive={activeView === 'campus_knowledge'} onClick={() => { setActiveView('campus_knowledge'); setSelectedRequest(null); }} />
 
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-6">Analytics</p>
-          <NavItem icon={<Star />} label="My Insights" isActive={activeView === 'insights'} onClick={() => { setActiveView('insights'); setSelectedRequest(null); }} />
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-6">ANALYTICS</p>
+          <NavItem icon={<Star />} label="Teaching Insights" isActive={activeView === 'insights'} onClick={() => { setActiveView('insights'); setSelectedRequest(null); }} />
 
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-6">Settings</p>
-           <div className="pt-4 mt-4 border-t border-slate-700/50">
-             <NavItem icon={<UserCircle />} label="My Profile" isActive={isSettingsOpen} onClick={() => setIsSettingsOpen(true)} />
-             <NavItem icon={<Info />} label="About App" isActive={isAboutOpen} onClick={() => setIsAboutOpen(true)} />
-             <NavItem icon={<Settings />} label="App Settings" isActive={activeView === 'app_settings'} onClick={() => { setActiveView('app_settings'); setIsSettingsOpen(false); }} />
-           </div>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-6">ACCOUNT</p>
+          <NavItem icon={<UserCircle />} label="My Profile & Settings" isActive={isSettingsOpen} onClick={() => setIsSettingsOpen(true)} />
+          <NavItem icon={<Info />} label="About App" isActive={isAboutOpen} onClick={() => setIsAboutOpen(true)} />
         </nav>
 
         <div className="p-4 border-t border-white/10">
@@ -811,33 +810,45 @@ export default function FacultyDashboard() {
                )}
              </div>
            </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-            <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-2">
-              <h2 className="text-2xl font-black text-slate-800 mb-2">Campus Doubts Feed</h2>
-              <p className="text-slate-500 font-medium mb-6">Answer questions asked by students to earn reputation.</p>
-              
-              {doubts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                  <Hash className="w-12 h-12 mb-4 text-slate-300" />
-                  <p className="font-bold text-lg">No campus doubts yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {doubts.map(doubt => (
-                    <DoubtCard 
-                      key={doubt.id} 
-                      doubt={doubt} 
-                      currentUser={auth.currentUser} 
-                      userProfile={{ fullName: userProfile?.fullName || 'Verified Professor', rank: 1 }} // Faculty badge
-                      isUserAnonymous={false} 
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        ) : activeView === 'campus_doubts' ? (
+           <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+             <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-2">
+               <h2 className="text-2xl font-black text-slate-800 mb-2">Campus Doubts Feed</h2>
+               <p className="text-slate-500 font-medium mb-6">Answer questions asked by students to earn reputation.</p>
+               
+               {doubts.length === 0 ? (
+                 <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                   <Hash className="w-12 h-12 mb-4 text-slate-300" />
+                   <p className="font-bold text-lg">No campus doubts yet.</p>
+                 </div>
+               ) : (
+                 <div className="space-y-4">
+                   {doubts.map(doubt => (
+                     <DoubtCard 
+                       key={doubt.id} 
+                       doubt={doubt} 
+                       currentUser={auth.currentUser} 
+                       userProfile={{ fullName: userProfile?.fullName || 'Verified Professor', rank: 1 }} 
+                       isUserAnonymous={false} 
+                     />
+                   ))}
+                 </div>
+               )}
+             </div>
+           </div>
+        ) : activeView === 'study_resources' ? (
+           <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+              <StudyHub currentUser={currentUser} userProfile={userProfile} role="faculty" />
+           </div>
+        ) : activeView === 'campus_knowledge' ? (
+           <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+              <CampusKnowledge doubts={doubts} />
+           </div>
+        ) : activeView === 'notifications' ? (
+           <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+              <NotificationsView notifications={[]} />
+           </div>
+        ) : null}
       </main>
 
       {/* Settings / Profile Modal */}
