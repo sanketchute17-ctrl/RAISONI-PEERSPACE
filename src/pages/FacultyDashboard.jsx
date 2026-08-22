@@ -147,10 +147,11 @@ export default function FacultyDashboard() {
   }, [activeView, requests, doubts, userProfile, currentUser]);
 
   useEffect(() => {
-    // Real-time listener for mentorship requests targeted specifically to this logged-in faculty
+    // Real-time listener for mentorship requests targeted strictly to this logged-in faculty member
     if (!currentUser) return;
     const q = query(collection(db, 'mentorshipRequests'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      const currentFacName = userProfile?.fullName ? userProfile.fullName.toLowerCase().trim() : '';
       const reqs = snapshot.docs
         .map(doc => ({
           id: doc.id,
@@ -159,11 +160,9 @@ export default function FacultyDashboard() {
                   (doc.data().status === 'Solved' ? 'Approved' : doc.data().status)
         }))
         .filter(req => {
-          // Show request if it's sent to this specific faculty's UID, or unassigned/all faculty, or matches faculty name
           const isDirectlyAssigned = req.facultyId === currentUser.uid;
-          const isUnassigned = !req.facultyId || req.facultyId === 'all';
-          const isNameMatched = req.faculty && userProfile?.fullName && req.faculty.toLowerCase().includes(userProfile.fullName.toLowerCase());
-          return isDirectlyAssigned || isUnassigned || isNameMatched;
+          const isNameMatched = req.faculty && currentFacName && req.faculty.toLowerCase().trim().includes(currentFacName);
+          return isDirectlyAssigned || isNameMatched;
         });
 
       setRequests(reqs);
@@ -506,12 +505,13 @@ export default function FacultyDashboard() {
                   <Loader2 className="w-8 h-8 animate-spin" />
                 </div>
               ) : filteredRequests.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center px-4">
-                   <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                     <Inbox className="w-8 h-8 text-slate-300" />
-                   </div>
-                   <p className="font-medium text-sm">No requests found in this folder.</p>
-                </div>
+                 <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center px-4">
+                    <div className="w-16 h-16 bg-indigo-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
+                      <Inbox className="w-8 h-8 text-indigo-400" />
+                    </div>
+                    <p className="font-bold text-sm text-slate-600 dark:text-slate-300">No mentorship requests assigned to you in this section.</p>
+                    <p className="text-xs text-slate-400 mt-1">When students select you as their mentor, their questions will appear here live!</p>
+                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 p-2">
                   {filteredRequests.map(req => (
