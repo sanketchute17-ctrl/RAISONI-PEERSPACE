@@ -809,52 +809,52 @@ export default function Dashboard() {
         <aside className="hidden md:block w-64 shrink-0 top-24 sticky space-y-6">
           
           {/* Global Navigation */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100">
-            <h3 className="font-bold text-[#0f172a] mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-              <LayoutDashboard className="w-4 h-4 text-blue-700" />
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
+            <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+              <LayoutDashboard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Menu
             </h3>
             <ul className="space-y-1">
               <li>
                 <button 
                   onClick={() => setActiveView('doubts')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'doubts' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'doubts' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
                 >
-                  <Hash className={`w-4 h-4 ${activeView === 'doubts' ? 'text-blue-200' : 'text-blue-400'}`} />
+                  <Hash className={`w-4 h-4 ${activeView === 'doubts' ? 'text-blue-200' : 'text-blue-500'}`} />
                   Campus Doubts
                 </button>
               </li>
               <li>
                 <button 
                   onClick={() => setActiveView('mentorship')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'mentorship' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
                 >
-                  <ShieldQuestion className={`w-4 h-4 ${activeView === 'mentorship' ? 'text-blue-200' : 'text-blue-400'}`} />
+                  <ShieldQuestion className={`w-4 h-4 ${activeView === 'mentorship' ? 'text-blue-200' : 'text-blue-500'}`} />
                   Expert Mentorship
                 </button>
               </li>
               <li>
                 <button 
                   onClick={() => setActiveView('insights')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'insights' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'insights' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
                 >
-                  <BarChart2 className={`w-4 h-4 ${activeView === 'insights' ? 'text-blue-200' : 'text-blue-400'}`} />
+                  <BarChart2 className={`w-4 h-4 ${activeView === 'insights' ? 'text-blue-200' : 'text-blue-500'}`} />
                   My Insights
                 </button>
               </li>
               <li>
                 <button 
                   onClick={() => setActiveView('history')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'history' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'history' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-800 dark:hover:text-white'}`}
                 >
-                  <History className={`w-4 h-4 ${activeView === 'history' ? 'text-blue-200' : 'text-blue-400'}`} />
+                  <History className={`w-4 h-4 ${activeView === 'history' ? 'text-blue-200' : 'text-blue-500'}`} />
                   My History
                 </button>
               </li>
               <li>
                 <button 
                   onClick={() => setActiveView('bookmarks')}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'bookmarks' ? 'bg-yellow-500 text-white shadow-md' : 'text-slate-600 hover:bg-yellow-50 hover:text-yellow-600'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${activeView === 'bookmarks' ? 'bg-yellow-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-yellow-50 dark:hover:bg-slate-700 hover:text-yellow-600'}`}
                 >
                   <Bookmark className={`w-4 h-4 ${activeView === 'bookmarks' ? 'text-yellow-100' : 'text-yellow-500'}`} />
                   Saved Bookmarks
@@ -863,13 +863,82 @@ export default function Dashboard() {
               <li>
                 <button 
                   onClick={() => setIsAboutOpen(true)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${isAboutOpen ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-3 ${isAboutOpen ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-600'}`}
                 >
                   <Info className={`w-4 h-4 ${isAboutOpen ? 'text-indigo-200' : 'text-indigo-500'}`} />
                   About App
                 </button>
               </li>
             </ul>
+          </div>
+
+          {/* Top Campus Contributors Leaderboard Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Trophy className="w-4 h-4 text-amber-500" /> Top Contributors
+             </h3>
+             {leaderboard.length === 0 ? (
+                <p className="text-xs text-slate-400 font-medium">No contributors yet today</p>
+             ) : (
+                <div className="space-y-2.5">
+                   {leaderboard.map((user, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700/60">
+                         <div className="flex items-center gap-2 min-w-0">
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${index === 0 ? 'bg-amber-400 text-slate-900' : index === 1 ? 'bg-slate-300 text-slate-900' : 'bg-amber-700 text-white'}`}>
+                               {index + 1}
+                            </span>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
+                         </div>
+                         <span className="text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
+                            {user.points} XP
+                         </span>
+                      </div>
+                   ))}
+                </div>
+             )}
+          </div>
+
+          {/* Trending Campus Topics Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-100 dark:border-slate-700">
+             <h3 className="font-bold text-[#0f172a] dark:text-slate-100 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+               <Flame className="w-4 h-4 text-orange-500" /> Trending Topics
+             </h3>
+             <div className="flex flex-wrap gap-1.5">
+                {topTrending.length === 0 ? (
+                   <span className="text-xs text-slate-400">#GENERAL</span>
+                ) : (
+                   topTrending.map((tag, idx) => (
+                      <button 
+                         key={idx}
+                         onClick={() => { setSelectedTopicFilter(tag); setSearchQuery(tag); setActiveView('doubts'); }}
+                         className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg transition-colors border border-blue-100 dark:border-blue-900/50"
+                      >
+                         #{tag}
+                      </button>
+                   ))
+                )}
+             </div>
+          </div>
+
+          {/* Quick Academic Resources Shortcuts Card */}
+          <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-4 shadow-sm border border-blue-800/60">
+             <h4 className="text-xs font-black uppercase tracking-wider text-blue-300 mb-2 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-blue-400" /> Campus Resources
+             </h4>
+             <div className="space-y-1.5 text-xs">
+                <button onClick={() => { setIsModalOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
+                   <span>Ask Syllabus Doubt</span>
+                   <span className="text-blue-300">→</span>
+                </button>
+                <button onClick={() => { setIsAnnouncementModalOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
+                   <span>Broadcast Live Alert</span>
+                   <span className="text-blue-300">→</span>
+                </button>
+                <button onClick={() => { setIsAboutOpen(true); }} className="w-full text-left p-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition-colors flex items-center justify-between">
+                   <span>Contact Support</span>
+                   <span className="text-blue-300">→</span>
+                </button>
+             </div>
           </div>
         </aside>
 

@@ -129,14 +129,14 @@ export default function AIAssistant() {
       <button
         id="ai-assistant-toggle"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none animate-bounce hover:animate-none border-4 border-white"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none animate-bounce hover:animate-none border-4 border-white dark:border-slate-800"
       >
-        {isOpen ? <X className="text-white w-7 h-7" /> : <Sparkles className="text-white w-7 h-7" />}
+        {isOpen ? <X className="text-white w-6 h-6 md:w-7 md:h-7" /> : <Sparkles className="text-white w-6 h-6 md:w-7 md:h-7" />}
       </button>
 
       {/* Main AI Window */}
       {isOpen && (
-        <div className="fixed bottom-28 right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] h-[550px] max-h-[70vh] bg-white rounded-3xl shadow-[0_10px_50px_-10px_rgba(37,99,235,0.3)] flex flex-col overflow-hidden border border-blue-100 animate-in slide-in-from-bottom-8 fade-in duration-300">
+        <div className="fixed bottom-36 md:bottom-28 right-4 md:right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] h-[520px] md:h-[550px] max-h-[70vh] bg-white dark:bg-slate-900 rounded-3xl shadow-[0_10px_50px_-10px_rgba(37,99,235,0.3)] flex flex-col overflow-hidden border border-blue-100 dark:border-slate-800 animate-in slide-in-from-bottom-8 fade-in duration-300">
           
           {/* Header */}
           <div className="bg-[#0f172a] text-white p-4 shrink-0 shadow-md relative z-10">
