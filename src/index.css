@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --animate-float-3d: float 4s ease-in-out infinite;
   
@@ -24,16 +26,67 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Eye Care Sepia Theme Mode */
 html.eyecare {
-  filter: sepia(0.3) contrast(0.92) brightness(0.96);
+  filter: sepia(0.35) contrast(0.92) brightness(0.95);
   background-color: #fbf7ee !important;
 }
 
 html.eyecare body {
   background-color: #f7f0e1 !important;
   color: #382c1e !important;
+}
+
+/* Night / Dark Mode Complete Theme Overrides */
+html.dark {
+  color-scheme: dark;
+  background-color: #090d16 !important;
+  color: #f8fafc !important;
+}
+
+html.dark body {
+  background-color: #090d16 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-\[\#e8eff5\],
+html.dark .bg-slate-100,
+html.dark .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark .text-slate-800,
+html.dark .text-slate-900,
+html.dark .text-\[\#0f172a\],
+html.dark .text-slate-700 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark .border-blue-100,
+html.dark .border-slate-200,
+html.dark .border-slate-100 {
+  border-color: #334155 !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
 }
 
