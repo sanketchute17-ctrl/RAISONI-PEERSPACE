@@ -37,6 +37,9 @@ export default function FacultyDashboard() {
   const [newProfilePicUrl, setNewProfilePicUrl] = useState('');
   const [newDepartment, setNewDepartment] = useState('');
   const [newFullName, setNewFullName] = useState('');
+  const [newEmployeeId, setNewEmployeeId] = useState('');
+  const [newDesignation, setNewDesignation] = useState('Assistant Professor');
+  const [newOfficeLocation, setNewOfficeLocation] = useState('');
   const [newAbout, setNewAbout] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newDateOfJoining, setNewDateOfJoining] = useState('');
@@ -88,6 +91,9 @@ export default function FacultyDashboard() {
       setNewProfilePicUrl(userProfile.profilePicUrl || '');
       setNewDepartment(userProfile.department || userProfile.branch || '');
       setNewFullName(userProfile.fullName || '');
+      setNewEmployeeId(userProfile.employeeId || userProfile.regNo || '');
+      setNewDesignation(userProfile.designation || 'Assistant Professor');
+      setNewOfficeLocation(userProfile.officeLocation || 'Academic Block A, Office 204');
       setNewAbout(userProfile.about || '');
       setNewUsername(userProfile.username || '');
       setNewDateOfJoining(userProfile.dateOfJoining || userProfile.dob || '');
@@ -215,13 +221,16 @@ export default function FacultyDashboard() {
          profilePicUrl: newProfilePicUrl,
          about: newAbout,
          username: newUsername,
+         employeeId: newEmployeeId,
+         designation: newDesignation,
+         officeLocation: newOfficeLocation,
          dateOfJoining: newDateOfJoining
        });
-       alert("Profile updated successfully!");
+       alert("Faculty Profile updated successfully!");
        setIsSettingsOpen(false);
      } catch(err) {
        console.error("Update failed", err);
-       alert("Error updating profile.");
+       alert("Error updating profile: " + err.message);
      }
      setIsUpdating(false);
   };
@@ -394,16 +403,19 @@ export default function FacultyDashboard() {
       <main className="ml-0 md:ml-64 flex-1 flex flex-col max-h-screen">
         
         {/* Top Header */}
-        <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 sticky top-0 z-10 shadow-sm print:hidden">
-          <div className="md:hidden font-bold text-lg">Faculty Portal</div>
+        <header className="h-16 sm:h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-10 shadow-sm print:hidden">
+          <div className="md:hidden flex items-center gap-2 font-black text-sm text-slate-800 dark:text-slate-100">
+            <img src="/college-logo.png" alt="Raisoni Logo" className="h-8 w-auto object-contain bg-[#0f172a] rounded p-1" />
+            <span>Faculty Portal</span>
+          </div>
           <div className="hidden md:flex flex-col">
-            <h2 className="font-bold text-xl text-slate-800">Welcome, {userProfile?.fullName || 'Professor'}</h2>
-            <p className="text-sm font-medium text-slate-500">
-              Department of {userProfile?.department || 'Engineering'}
+            <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Welcome, {userProfile?.fullName || 'Professor'}</h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Department of {userProfile?.department || userProfile?.branch || 'Engineering'}
             </p>
           </div>
           
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
              {/* Single Unified 3-Mode Theme Toggle Button */}
              <button 
                 onClick={cycleThemeMode}
@@ -421,12 +433,12 @@ export default function FacultyDashboard() {
 
              <div className="relative hidden sm:block">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type="text" placeholder="Search requests..." className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none w-48 lg:w-64 transition-all" />
+                <input type="text" placeholder="Search requests..." className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none w-48 lg:w-64 transition-all text-slate-800 dark:text-slate-100" />
              </div>
              <div 
                title="Settings & Profile"
                onClick={() => setIsSettingsOpen(true)}
-               className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-200 cursor-pointer overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all"
+               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-indigo-200 cursor-pointer overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all shrink-0"
              >
                {userProfile?.profilePicUrl ? (
                   <img src={userProfile.profilePicUrl} alt="faculty" className="w-full h-full object-cover" />
@@ -438,7 +450,7 @@ export default function FacultyDashboard() {
         </header>
 
         {/* Mobile Sub-Header Navigation Strip (< 768px) */}
-        <div className="md:hidden bg-[#0f172a] border-b border-slate-800 px-3 py-2 flex items-center gap-1.5 overflow-x-auto shrink-0 z-10 hidescrollbar">
+        <div className="md:hidden bg-[#0f172a] border-b border-slate-800 px-3 py-2 flex items-center gap-1.5 overflow-x-auto shrink-0 z-10 custom-scrollbar">
           <button
             onClick={() => { setActiveView('mentorship'); setActiveTab('Pending Advice'); setSelectedRequest(null); }}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
@@ -456,20 +468,20 @@ export default function FacultyDashboard() {
             Approved
           </button>
           <button
-            onClick={() => { setActiveView('mentorship'); setActiveTab('Declined'); setSelectedRequest(null); }}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-              activeView === 'mentorship' && activeTab === 'Declined' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
-            }`}
-          >
-            Declined
-          </button>
-          <button
             onClick={() => { setActiveView('campus_doubts'); setSelectedRequest(null); }}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               activeView === 'campus_doubts' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
             }`}
           >
             Campus Doubts
+          </button>
+          <button
+            onClick={() => { setActiveView('campus_knowledge'); setSelectedRequest(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeView === 'campus_knowledge' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            Knowledge
           </button>
           <button
             onClick={() => { setActiveView('insights'); setSelectedRequest(null); }}
@@ -483,7 +495,13 @@ export default function FacultyDashboard() {
             onClick={() => setIsSettingsOpen(true)}
             className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-800 text-slate-300"
           >
-            My Profile
+            Profile
+          </button>
+          <button
+            onClick={() => setIsAboutOpen(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-800 text-slate-300"
+          >
+            About
           </button>
         </div>
 
@@ -880,66 +898,81 @@ export default function FacultyDashboard() {
              
              {/* Tab Content */}
              <div className="p-6 max-h-[65vh] overflow-y-auto custom-scrollbar">
-               {profileTab === 'general' && (
-                 <form onSubmit={handleUpdateProfile} className="space-y-5">
-                   <div className="flex flex-col items-center justify-center mb-6 relative">
-                     <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-slate-50 shadow-lg overflow-hidden flex items-center justify-center">
-                       {newProfilePicUrl ? (
-                          <img src={newProfilePicUrl} alt="Preview" className="w-full h-full object-cover" />
-                       ) : userProfile?.profilePicUrl ? (
-                          <img src={userProfile.profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
-                       ) : (
-                          <User className="w-10 h-10 text-slate-400" />
-                       )}
-                     </div>
-                   </div>
+                {profileTab === 'general' && (
+                  <form onSubmit={handleUpdateProfile} className="space-y-5">
+                    <div className="flex flex-col items-center justify-center mb-6 relative">
+                      <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-slate-50 shadow-lg overflow-hidden flex items-center justify-center">
+                        {newProfilePicUrl ? (
+                           <img src={newProfilePicUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : userProfile?.profilePicUrl ? (
+                           <img src={userProfile.profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                           <User className="w-10 h-10 text-slate-400" />
+                        )}
+                      </div>
+                    </div>
 
-                   <div className="grid grid-cols-2 gap-4">
-                     <div>
-                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Username</label>
-                       <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder="@username" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" required />
-                     </div>
-                     <div>
-                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Full Name</label>
-                       <input type="text" value={newFullName} onChange={e => setNewFullName(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" required />
-                     </div>
-                   </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Faculty Full Name</label>
+                        <input type="text" value={newFullName} onChange={e => setNewFullName(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" required />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Employee / Faculty ID</label>
+                        <input type="text" value={newEmployeeId} onChange={e => setNewEmployeeId(e.target.value)} placeholder="e.g. FAC101" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                    </div>
 
-                   <div className="grid grid-cols-2 gap-4">
-                     <div>
-                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Department / Branch</label>
-                       <input type="text" value={newDepartment} onChange={e => setNewDepartment(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" required />
-                     </div>
-                     <div>
-                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date of Joining</label>
-                       <input type="date" value={newDateOfJoining} onChange={e => setNewDateOfJoining(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
-                     </div>
-                   </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Academic Department</label>
+                        <input type="text" value={newDepartment} onChange={e => setNewDepartment(e.target.value)} placeholder="e.g. Computer Science" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" required />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Faculty Designation</label>
+                        <select value={newDesignation} onChange={e => setNewDesignation(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+                           <option value="Assistant Professor">Assistant Professor</option>
+                           <option value="Associate Professor">Associate Professor</option>
+                           <option value="Professor & HOD">Professor & HOD</option>
+                           <option value="Senior Lecturer">Senior Lecturer</option>
+                        </select>
+                      </div>
+                    </div>
 
-                   <div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Office / Cabin Location</label>
+                        <input type="text" value={newOfficeLocation} onChange={e => setNewOfficeLocation(e.target.value)} placeholder="e.g. Academic Block A, Room 204" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date of Joining</label>
+                        <input type="date" value={newDateOfJoining} onChange={e => setNewDateOfJoining(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" /> Profile Photo & Gallery</label>
-                      <label className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all mb-2">
-                         <Camera className="w-4 h-4" />
-                         <span>Choose Photo from Device Gallery</span>
-                         <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
-                      </label>
-                      <input type="text" value={newProfilePicUrl} onChange={e => setNewProfilePicUrl(e.target.value)} placeholder="Or paste an image URL..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
-                    </div></div>
+                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" /> Profile Photo & Device Gallery</label>
+                       <label className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all mb-2">
+                          <Camera className="w-4 h-4" />
+                          <span>Choose Photo from Device Gallery</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleGalleryPhotoUpload} />
+                       </label>
+                       <input type="text" value={newProfilePicUrl} onChange={e => setNewProfilePicUrl(e.target.value)} placeholder="Or paste an image URL..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
 
-                   <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">About</label>
-                     <textarea value={newAbout} onChange={e => setNewAbout(e.target.value)} placeholder="A short bio about yourself..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-20" />
-                   </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Specialization & Bio</label>
+                      <textarea value={newAbout} onChange={e => setNewAbout(e.target.value)} placeholder="Short bio, subjects taught, research interests..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-20" />
+                    </div>
 
-                   <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-                     <button type="button" onClick={() => setIsSettingsOpen(false)} className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors text-sm">Cancel</button>
-                     <button type="submit" disabled={isUpdating} className="px-6 py-2.5 bg-[#0f172a] hover:bg-indigo-900 text-white font-bold rounded-xl shadow-md transition-all text-sm disabled:opacity-50 flex items-center gap-2">
-                       {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Profile"}
-                     </button>
-                   </div>
-                 </form>
-               )}
+                    <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                      <button type="button" onClick={() => setIsSettingsOpen(false)} className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors text-sm">Cancel</button>
+                      <button type="submit" disabled={isUpdating} className="px-6 py-2.5 bg-[#0f172a] hover:bg-indigo-900 text-white font-bold rounded-xl shadow-md transition-all text-sm disabled:opacity-50 flex items-center gap-2">
+                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Faculty Profile"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                {profileTab === 'security' && (
                  <form onSubmit={handleChangePassword} className="space-y-5">
